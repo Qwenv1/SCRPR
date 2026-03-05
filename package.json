@@ -1,16 +1,17 @@
 {
-  "name": "mkt-scraper",
-  "version": "1.0.0",
+  "name": "scrpr",
+  "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
-    "@netlify/functions": "^5.1.2",
-    "cheerio": "^1.2.0",
-    "pdf-parse": "^1.1.1"
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@netlify/functions": "^2.8.0",
+    "cheerio": "^1.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
     "typescript": "^5.7.0"
   }
 }
+
 
 
