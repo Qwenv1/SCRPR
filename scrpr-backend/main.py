@@ -1,7 +1,7 @@
 """
 SCRPR Backend — FastAPI + Scrapling
 
-POST /api/scrape?action=scrape   — Scrape a single URL
+POST /api/scrape?action=scrape   — Scrape a single URL (HTML or PDF)
 POST /api/scrape?action=crawl    — Crawl from a URL, following links up to a depth limit
 POST /api/scrape?action=extract  — Extract structured data using CSS selectors
 
@@ -12,10 +12,13 @@ import os
 import re
 import hmac
 import time
+import tempfile
 from datetime import datetime, timezone
 from typing import Optional
 from urllib.parse import urljoin, urlparse
 
+import requests as http_requests
+import pymupdf
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -127,6 +130,93 @@ class ExtractRequest(BaseModel):
     url: str
     selectors: dict[str, dict]
     headers: Optional[dict[str, str]] = None
+
+
+# ── PDF parsing ──
+
+MAX_PDF_SIZE = 50 * 1024 * 1024  # 50 MB
+
+
+def is_pdf_url(url: str) -> bool:
+    """Check if URL likely points to a PDF."""
+    return urlparse(url).path.lower().endswith(".pdf")
+
+
+def fetch_and_parse_pdf(url: str, headers: dict[str, str] | None = None) -> dict:
+    """Download a PDF and extract text/tables as markdown."""
+    req_headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    if headers:
+        req_headers.update(headers)
+
+    resp = http_requests.get(url, headers=req_headers, timeout=60, stream=True)
+    resp.raise_for_status()
+
+    content_type = resp.headers.get("Content-Type", "")
+    content_length = int(resp.headers.get("Content-Length", 0))
+    if content_length > MAX_PDF_SIZE:
+        raise ValueError(f"PDF too large: {content_length} bytes (max {MAX_PDF_SIZE})")
+
+    pdf_bytes = resp.content
+
+    # Verify it's actually a PDF
+    if not pdf_bytes[:5] == b"%PDF-":
+        # Not a PDF — content-type lied or redirect happened
+        if "application/pdf" not in content_type and not is_pdf_url(url):
+            raise ValueError("URL did not return a PDF")
+
+    doc = pymupdf.open(stream=pdf_bytes, filetype="pdf")
+
+    pages: list[dict] = []
+    all_text_parts: list[str] = []
+
+    for page_num in range(len(doc)):
+        page = doc[page_num]
+        text = page.get_text("text")
+
+        # Extract tables if available
+        tables_md = ""
+        try:
+            tabs = page.find_tables()
+            if tabs and tabs.tables:
+                for table in tabs.tables:
+                    df = table.to_pandas()
+                    if not df.empty:
+                        tables_md += "\n" + df.to_markdown(index=False) + "\n"
+        except Exception:
+            pass  # table extraction is best-effort
+
+        page_content = text.strip()
+        if tables_md:
+            page_content += "\n\n**Tables:**\n" + tables_md
+
+        pages.append({
+            "page": page_num + 1,
+            "text": text.strip(),
+            "tables_markdown": tables_md.strip(),
+        })
+        if page_content:
+            all_text_parts.append(f"--- Page {page_num + 1} ---\n\n{page_content}")
+
+    metadata = doc.metadata or {}
+    doc.close()
+
+    combined = "\n\n".join(all_text_parts)
+
+    return {
+        "page_count": len(pages),
+        "metadata": {
+            "title": metadata.get("title", ""),
+            "author": metadata.get("author", ""),
+            "subject": metadata.get("subject", ""),
+            "creator": metadata.get("creator", ""),
+            "producer": metadata.get("producer", ""),
+            "creation_date": metadata.get("creationDate", ""),
+        },
+        "content": combined,
+        "pages": pages,
+    }
 
 
 # ── Scrapling fetcher helpers ──
@@ -297,7 +387,60 @@ async def handle_scrape(body: ScrapeRequest) -> dict:
     url = validate_url(body.url)
     start = time.time()
 
+    # PDF detection — bypass Scrapling, use PyMuPDF
+    if is_pdf_url(url):
+        try:
+            pdf_result = fetch_and_parse_pdf(url, headers=body.headers)
+            return {
+                "success": True,
+                "data": {
+                    "url": url,
+                    "status": 200,
+                    "title": pdf_result["metadata"].get("title", "") or os.path.basename(urlparse(url).path),
+                    "content": pdf_result["content"],
+                    "word_count": len(pdf_result["content"].split()),
+                    "page_count": pdf_result["page_count"],
+                    "format": "pdf",
+                    "scraped_at": datetime.now(timezone.utc).isoformat(),
+                    "elapsed_ms": int((time.time() - start) * 1000),
+                    "metadata": pdf_result["metadata"],
+                    "pages": pdf_result["pages"],
+                },
+            }
+        except Exception as e:
+            raise HTTPException(422, detail=f"PDF parsing failed: {str(e)}")
+
+    # Standard HTML scrape
     response = fetch_page(url, stealth=body.stealth, headers=body.headers)
+
+    # Check if response is actually a PDF (content-type detection)
+    content_type = ""
+    try:
+        content_type = response.headers.get("content-type", "") if hasattr(response, "headers") else ""
+    except Exception:
+        pass
+
+    if "application/pdf" in content_type:
+        try:
+            pdf_result = fetch_and_parse_pdf(url, headers=body.headers)
+            return {
+                "success": True,
+                "data": {
+                    "url": url,
+                    "status": 200,
+                    "title": pdf_result["metadata"].get("title", "") or os.path.basename(urlparse(url).path),
+                    "content": pdf_result["content"],
+                    "word_count": len(pdf_result["content"].split()),
+                    "page_count": pdf_result["page_count"],
+                    "format": "pdf",
+                    "scraped_at": datetime.now(timezone.utc).isoformat(),
+                    "elapsed_ms": int((time.time() - start) * 1000),
+                    "metadata": pdf_result["metadata"],
+                    "pages": pdf_result["pages"],
+                },
+            }
+        except Exception as e:
+            raise HTTPException(422, detail=f"PDF parsing failed: {str(e)}")
 
     title_el = response.css("title")
     title = title_el[0].text.strip() if title_el and title_el[0].text else ""
@@ -340,6 +483,34 @@ async def handle_crawl(body: CrawlRequest) -> dict:
 
         try:
             page_start = time.time()
+
+            # Handle PDF links found during crawl
+            if is_pdf_url(url):
+                try:
+                    pdf_result = fetch_and_parse_pdf(url)
+                    results.append({
+                        "url": url,
+                        "status": 200,
+                        "title": pdf_result["metadata"].get("title", "") or os.path.basename(urlparse(url).path),
+                        "content": pdf_result["content"],
+                        "format": "pdf",
+                        "page_count": pdf_result["page_count"],
+                        "links": [],
+                        "word_count": len(pdf_result["content"].split()),
+                        "scraped_at": datetime.now(timezone.utc).isoformat(),
+                        "elapsed_ms": int((time.time() - page_start) * 1000),
+                    })
+                except Exception as e:
+                    results.append({
+                        "url": url,
+                        "status": 0,
+                        "title": "",
+                        "content": f"PDF parse error: {str(e)}",
+                        "scraped_at": datetime.now(timezone.utc).isoformat(),
+                        "elapsed_ms": int((time.time() - page_start) * 1000),
+                    })
+                continue
+
             response = fetch_page(url, stealth=True)
 
             title_el = response.css("title")
@@ -468,4 +639,4 @@ async def scrape_endpoint(request: Request, action: str = "scrape"):
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "engine": "scrapling"}
+    return {"status": "ok", "engine": "scrapling+pymupdf"}
