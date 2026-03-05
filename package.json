@@ -4,10 +4,12 @@
   "private": true,
   "dependencies": {
     "@netlify/functions": "^5.1.2",
-    "cheerio": "^1.2.0"
+    "cheerio": "^1.2.0",
+    "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "typescript": "^5.7.0"
   }
 }
+
