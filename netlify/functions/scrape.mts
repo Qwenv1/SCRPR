@@ -13,10 +13,8 @@ import type { Context, Config } from "@netlify/functions";
 import { load as cheerioLoad, type CheerioAPI } from "cheerio";
 import Anthropic from "@anthropic-ai/sdk";
 import pdfParse from "pdf-parse";
-import { checkRateLimit } from "./rate-limit.mts";
 
 // ── Types ──
-
 interface ScrapeRequest {
   url: string;
   format?: "markdown" | "html" | "text" | "raw";
@@ -25,7 +23,6 @@ interface ScrapeRequest {
   headers?: Record<string, string>;
   stealth?: boolean;
 }
-
 interface CrawlRequest {
   url: string;
   max_depth?: number;
@@ -34,24 +31,20 @@ interface CrawlRequest {
   exclude_pattern?: string;
   format?: "markdown" | "html" | "text";
 }
-
 interface ExtractRequest {
   url: string;
   selectors: Record<string, { selector: string; type?: "css" | "xpath"; attribute?: string; multiple?: boolean }>;
   headers?: Record<string, string>;
 }
-
 interface StructureRequest {
   content: string;
   hint?: string;
 }
-
 interface StructuredTable {
   name: string;
   columns: string[];
   rows: (string | number | null)[][];
 }
-
 interface PageResult {
   url: string;
   status: number;
@@ -63,9 +56,7 @@ interface PageResult {
   scraped_at: string;
   elapsed_ms: number;
 }
-
 // ── Stealth headers (Scrapling-inspired) ──
-
 const STEALTH_HEADERS: Record<string, string> = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
   "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
@@ -80,9 +71,7 @@ const STEALTH_HEADERS: Record<string, string> = {
   "Sec-Fetch-User": "?1",
   "Cache-Control": "max-age=0",
 };
-
 // ── Auth helper ──
-
 function authenticate(req: Request): Response | null {
   const url = new URL(req.url);
   if (url.searchParams.has("token") || url.searchParams.has("api_key")) {
@@ -98,9 +87,7 @@ function authenticate(req: Request): Response | null {
   if (diff !== 0) return json({ error: "Unauthorized" }, 401);
   return null;
 }
-
 // ── URL validation ──
-
 function validateUrl(raw: string): URL | null {
   try {
     const u = new URL(raw);
@@ -122,23 +109,18 @@ function validateUrl(raw: string): URL | null {
     return null;
   }
 }
-
 // ── PDF detection ──
-
 function isPdfUrl(url: string): boolean {
   try {
     const pathname = new URL(url).pathname.toLowerCase();
     return pathname.endsWith(".pdf");
   } catch { return false; }
 }
-
 function isPdfResponse(headers: Headers): boolean {
   const ct = headers.get("content-type") || "";
   return ct.includes("application/pdf");
 }
-
 // ── Fetch page with stealth options ──
-
 interface FetchResult {
   html: string;
   status: number;
@@ -147,7 +129,6 @@ interface FetchResult {
   pdfText?: string;
   pdfPages?: number;
 }
-
 async function fetchPage(url: string, opts: { headers?: Record<string, string>; stealth?: boolean } = {}): Promise<FetchResult> {
   const fetchHeaders: Record<string, string> = {
     ...(opts.stealth !== false ? STEALTH_HEADERS : {}),
@@ -161,15 +142,12 @@ async function fetchPage(url: string, opts: { headers?: Record<string, string>; 
       signal: controller.signal,
       redirect: "follow",
     });
-
     // Detect PDF by content-type or URL extension
     if (isPdfResponse(resp.headers) || isPdfUrl(url)) {
       const buffer = Buffer.from(await resp.arrayBuffer());
-      const parser = new PDFParse({ data: buffer });
-      const result = await parser.getText();
+      const result = await pdfParse(buffer);
       const text = result.text;
-      const numPages = result.total;
-      await parser.destroy();
+      const numPages = result.numpages;
       return {
         html: "",
         status: resp.status,
@@ -179,22 +157,17 @@ async function fetchPage(url: string, opts: { headers?: Record<string, string>; 
         pdfPages: numPages,
       };
     }
-
     const html = await resp.text();
     return { html, status: resp.status, responseHeaders: resp.headers, isPdf: false };
   } finally {
     clearTimeout(timeout);
   }
 }
-
 // ── HTML → Markdown conversion ──
-
 function htmlToMarkdown($: CheerioAPI): string {
   // Remove non-content elements
   $("script, style, nav, footer, header, aside, iframe, noscript, svg, [role=banner], [role=navigation], [role=complementary]").remove();
-
   const lines: string[] = [];
-
   function processNode(el: ReturnType<CheerioAPI>) {
     el.contents().each((_, node: any) => {
       if (node.type === "text") {
@@ -205,23 +178,19 @@ function htmlToMarkdown($: CheerioAPI): string {
       if (node.type !== "tag") return;
       const $n = $(node);
       const tag = (node as any).tagName?.toLowerCase() || "";
-
       if (tag === "br") { lines.push(""); return; }
       if (tag === "hr") { lines.push("\n---\n"); return; }
-
       if (/^h[1-6]$/.test(tag)) {
         const level = parseInt(tag[1]);
         const text = $n.text().trim();
         if (text) lines.push("\n" + "#".repeat(level) + " " + text + "\n");
         return;
       }
-
       if (tag === "p") {
         const text = $n.text().trim();
         if (text) lines.push("\n" + text + "\n");
         return;
       }
-
       if (tag === "a") {
         const href = $n.attr("href");
         const text = $n.text().trim();
@@ -229,32 +198,27 @@ function htmlToMarkdown($: CheerioAPI): string {
         else if (text) lines.push(text);
         return;
       }
-
       if (tag === "img") {
         const alt = $n.attr("alt") || "";
         const src = $n.attr("src") || "";
         if (src) lines.push(`![${alt}](${src})`);
         return;
       }
-
       if (tag === "li") {
         const text = $n.text().trim();
         if (text) lines.push("- " + text);
         return;
       }
-
       if (tag === "pre" || tag === "code") {
         const text = $n.text().trim();
         if (text) lines.push("\n```\n" + text + "\n```\n");
         return;
       }
-
       if (tag === "blockquote") {
         const text = $n.text().trim();
         if (text) lines.push("\n> " + text + "\n");
         return;
       }
-
       if (tag === "table") {
         const rows: string[][] = [];
         $n.find("tr").each((_, tr) => {
@@ -274,23 +238,18 @@ function htmlToMarkdown($: CheerioAPI): string {
         }
         return;
       }
-
       // Recurse for divs, spans, sections, etc.
       processNode($n);
     });
   }
-
   const $main = $("main, article, [role=main]").first();
   processNode($main.length ? $main : $("body"));
-
   return lines
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
-
 // ── Extract metadata ──
-
 function extractMetadata($: CheerioAPI, url: string): Record<string, string> {
   const meta: Record<string, string> = { url };
   const title = $("title").first().text().trim();
@@ -306,9 +265,7 @@ function extractMetadata($: CheerioAPI, url: string): Record<string, string> {
   if (lang) meta.language = lang;
   return meta;
 }
-
 // ── Extract links ──
-
 function extractLinks($: CheerioAPI, baseUrl: string): string[] {
   const links = new Set<string>();
   $("a[href]").each((_, el) => {
@@ -321,30 +278,23 @@ function extractLinks($: CheerioAPI, baseUrl: string): string[] {
   });
   return [...links];
 }
-
 // ── Clean HTML (remove scripts, styles, etc.) ──
-
 function cleanHtml($: CheerioAPI): string {
   const $clone = cheerioLoad($.html());
   $clone("script, style, noscript, svg, iframe").remove();
   const $main = $clone("main, article, [role=main]").first();
   return ($main.length ? $main : $clone("body")).html()?.trim() || "";
 }
-
 // ── Scrape action ──
-
 async function handleScrape(body: ScrapeRequest): Promise<Response> {
   const parsed = validateUrl(body.url);
   if (!parsed) return json({ error: "Invalid or blocked URL" }, 400);
-
   const format = body.format || "markdown";
   const start = Date.now();
-
   const fetchResult = await fetchPage(body.url, {
     headers: body.headers,
     stealth: body.stealth ?? true,
   });
-
   // PDF handling — return extracted text directly
   if (fetchResult.isPdf) {
     const content = fetchResult.pdfText || "";
@@ -362,11 +312,9 @@ async function handleScrape(body: ScrapeRequest): Promise<Response> {
     }
     return json({ success: true, data: { ...result, format: "pdf", page_count: fetchResult.pdfPages } });
   }
-
   const { html, status } = fetchResult;
   const $ = cheerioLoad(html);
   const title = $("title").first().text().trim();
-
   let content: string;
   switch (format) {
     case "markdown": content = htmlToMarkdown($); break;
@@ -379,7 +327,6 @@ async function handleScrape(body: ScrapeRequest): Promise<Response> {
     case "raw": content = html; break;
     default: content = htmlToMarkdown($);
   }
-
   const result: PageResult = {
     url: body.url,
     status,
@@ -389,45 +336,34 @@ async function handleScrape(body: ScrapeRequest): Promise<Response> {
     scraped_at: new Date().toISOString(),
     elapsed_ms: Date.now() - start,
   };
-
   if (body.include_metadata) {
     result.metadata = extractMetadata($, body.url);
   }
-
   return json({ success: true, data: result });
 }
-
 // ── Crawl action ──
-
 async function handleCrawl(body: CrawlRequest): Promise<Response> {
   const parsed = validateUrl(body.url);
   if (!parsed) return json({ error: "Invalid or blocked URL" }, 400);
-
   const maxDepth = Math.min(body.max_depth ?? 2, 3);
   const maxPages = Math.min(body.max_pages ?? 10, 20);
   const format = body.format || "markdown";
   const baseOrigin = parsed.origin;
-
   const visited = new Set<string>();
   const results: PageResult[] = [];
   const queue: { url: string; depth: number }[] = [{ url: body.url, depth: 0 }];
-
   const includeRe = body.include_pattern ? new RegExp(body.include_pattern) : null;
   const excludeRe = body.exclude_pattern ? new RegExp(body.exclude_pattern) : null;
-
   const start = Date.now();
-
   while (queue.length > 0 && results.length < maxPages) {
     const { url, depth } = queue.shift()!;
     if (visited.has(url)) continue;
     visited.add(url);
-
     try {
       const pageStart = Date.now();
       const { html, status } = await fetchPage(url, { stealth: true });
       const $ = cheerioLoad(html);
       const title = $("title").first().text().trim();
-
       let content: string;
       switch (format) {
         case "markdown": content = htmlToMarkdown($); break;
@@ -439,7 +375,6 @@ async function handleCrawl(body: CrawlRequest): Promise<Response> {
         }
         default: content = htmlToMarkdown($);
       }
-
       const links = extractLinks($, url);
       results.push({
         url,
@@ -451,7 +386,6 @@ async function handleCrawl(body: CrawlRequest): Promise<Response> {
         scraped_at: new Date().toISOString(),
         elapsed_ms: Date.now() - pageStart,
       });
-
       // Enqueue discovered links if within depth
       if (depth < maxDepth) {
         for (const link of links) {
@@ -476,7 +410,6 @@ async function handleCrawl(body: CrawlRequest): Promise<Response> {
       });
     }
   }
-
   return json({
     success: true,
     data: {
@@ -487,27 +420,20 @@ async function handleCrawl(body: CrawlRequest): Promise<Response> {
     },
   });
 }
-
 // ── Extract action ──
-
 async function handleExtract(body: ExtractRequest): Promise<Response> {
   const parsed = validateUrl(body.url);
   if (!parsed) return json({ error: "Invalid or blocked URL" }, 400);
-
   if (!body.selectors || Object.keys(body.selectors).length === 0) {
     return json({ error: "At least one selector is required" }, 400);
   }
-
   const start = Date.now();
   const { html, status } = await fetchPage(body.url, { headers: body.headers, stealth: true });
   const $ = cheerioLoad(html);
-
   const extracted: Record<string, string | string[]> = {};
-
   for (const [key, spec] of Object.entries(body.selectors)) {
     const { selector, attribute, multiple } = spec;
     const els = $(selector);
-
     if (multiple) {
       const values: string[] = [];
       els.each((_, el) => {
@@ -520,7 +446,6 @@ async function handleExtract(body: ExtractRequest): Promise<Response> {
       extracted[key] = attribute ? (el.attr(attribute) || "") : el.text().trim();
     }
   }
-
   return json({
     success: true,
     data: {
@@ -532,24 +457,18 @@ async function handleExtract(body: ExtractRequest): Promise<Response> {
     },
   });
 }
-
 // ── Structure action (Claude-powered) ──
-
 async function handleStructure(body: StructureRequest): Promise<Response> {
   if (!body.content || body.content.length < 10) {
     return json({ error: "Content is required (min 10 chars)" }, 400);
   }
-
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return json({ error: "ANTHROPIC_API_KEY not configured" }, 503);
-
   const start = Date.now();
   const anthropic = new Anthropic({ apiKey });
-
   // Truncate to ~50k chars to keep response time under Netlify timeout
   const truncated = body.content.slice(0, 50_000);
   const hintLine = body.hint ? `\nHint about the data: ${body.hint}\n` : "";
-
   // Use Haiku for speed — structure calls must finish within Netlify's timeout
   const resp = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
@@ -563,7 +482,6 @@ Return ONLY a JSON array of table objects. Each table object must have:
 - "name": string (descriptive table name)
 - "columns": string[] (column headers)
 - "rows": (string|number|null)[][] (data rows, using numbers for numeric values)
-
 Rules:
 - Extract ALL data rows, not just samples
 - Clean up values: remove extra whitespace, normalize currency/percentages
@@ -571,16 +489,13 @@ Rules:
 - If the text contains multiple logical tables, return each as a separate object
 - If data appears to be a single table, return an array with one object
 - Return valid JSON only, no markdown fences or explanation
-
 Raw text content:
 ${truncated}`,
       },
     ],
   });
-
   const textBlock = resp.content.find((b) => b.type === "text");
   const raw = textBlock?.text || "[]";
-
   // Parse the JSON from Claude's response
   let tables: StructuredTable[];
   try {
@@ -594,7 +509,6 @@ ${truncated}`,
       raw_response: raw.slice(0, 500),
     }, 422);
   }
-
   return json({
     success: true,
     data: {
@@ -603,32 +517,21 @@ ${truncated}`,
     },
   });
 }
-
 // ── Handler ──
-
 export default async (req: Request, context: Context) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders() });
   }
-
   if (req.method !== "POST") {
     return json({ error: "POST required" }, 405);
   }
-
-  // Rate limit
-  const rl = await checkRateLimit(req, "scrape", 30);
-  if (rl.limited) return json({ error: "Rate limit exceeded", retry_after: rl.retryAfterSeconds }, 429);
-
   // Auth
   const authErr = authenticate(req);
   if (authErr) return authErr;
-
   const url = new URL(req.url);
   const action = url.searchParams.get("action") || "scrape";
-
   try {
     const body = await req.json();
-
     switch (action) {
       case "scrape": return await handleScrape(body as ScrapeRequest);
       case "crawl": return await handleCrawl(body as CrawlRequest);
@@ -641,14 +544,12 @@ export default async (req: Request, context: Context) => {
     return json({ error: e.message || "Scrape failed" }, 500);
   }
 };
-
 function json(data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...corsHeaders() },
   });
 }
-
 function corsHeaders(): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": "*",
@@ -656,5 +557,4 @@ function corsHeaders(): Record<string, string> {
     "Access-Control-Allow-Headers": "Content-Type, X-Admin-Token, Authorization",
   };
 }
-
 export const config: Config = { path: "/api/scrape" };
