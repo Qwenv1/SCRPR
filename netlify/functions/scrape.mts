@@ -12,7 +12,8 @@
 import type { Context, Config } from "@netlify/functions";
 import { load as cheerioLoad, type CheerioAPI } from "cheerio";
 import Anthropic from "@anthropic-ai/sdk";
-import pdfParse from "pdf-parse";
+import { PDFParse } from "pdf-parse";
+import { checkRateLimit } from "./rate-limit.mts";
 
 // ── Types ──
 
@@ -164,14 +165,18 @@ async function fetchPage(url: string, opts: { headers?: Record<string, string>; 
     // Detect PDF by content-type or URL extension
     if (isPdfResponse(resp.headers) || isPdfUrl(url)) {
       const buffer = Buffer.from(await resp.arrayBuffer());
-      const pdf = await pdfParse(buffer);
+      const parser = new PDFParse({ data: buffer });
+      const result = await parser.getText();
+      const text = result.text;
+      const numPages = result.total;
+      await parser.destroy();
       return {
         html: "",
         status: resp.status,
         responseHeaders: resp.headers,
         isPdf: true,
-        pdfText: pdf.text,
-        pdfPages: pdf.numpages,
+        pdfText: text,
+        pdfPages: numPages,
       };
     }
 
@@ -541,7 +546,7 @@ async function handleStructure(body: StructureRequest): Promise<Response> {
   const start = Date.now();
   const anthropic = new Anthropic({ apiKey });
 
-    // Truncate to ~50k chars to keep response time under Netlify timeout
+  // Truncate to ~50k chars to keep response time under Netlify timeout
   const truncated = body.content.slice(0, 50_000);
   const hintLine = body.hint ? `\nHint about the data: ${body.hint}\n` : "";
 
@@ -609,6 +614,10 @@ export default async (req: Request, context: Context) => {
   if (req.method !== "POST") {
     return json({ error: "POST required" }, 405);
   }
+
+  // Rate limit
+  const rl = await checkRateLimit(req, "scrape", 30);
+  if (rl.limited) return json({ error: "Rate limit exceeded", retry_after: rl.retryAfterSeconds }, 429);
 
   // Auth
   const authErr = authenticate(req);
