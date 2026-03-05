@@ -25,7 +25,7 @@ from pydantic import BaseModel, Field
 load_dotenv()
 
 # ── Scrapling imports ──
-from scrapling import Fetcher, StealthFetcher
+from scrapling import Fetcher, StealthyFetcher
 
 # ── App ──
 
@@ -135,7 +135,7 @@ class ExtractRequest(BaseModel):
 def get_fetcher(stealth: bool = True):
     """Return appropriate Scrapling fetcher."""
     if stealth:
-        return StealthFetcher(auto_match=True)
+        return StealthyFetcher(auto_match=True)
     return Fetcher(auto_match=True)
 
 
