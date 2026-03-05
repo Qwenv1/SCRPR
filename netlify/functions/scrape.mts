@@ -13,7 +13,44 @@ import type { Context, Config } from "@netlify/functions";
 import { load as cheerioLoad, type CheerioAPI, type Cheerio } from "cheerio";
 import Anthropic from "@anthropic-ai/sdk";
 import { PDFParse } from "pdf-parse";
-import { checkRateLimit } from "./rate-limit.mts";
+import { getStore } from "@netlify/blobs";
+
+// ── Inline rate limiter (avoids cross-function import resolution issues) ──
+interface RateLimitResult {
+  limited: boolean;
+  retryAfterSeconds: number;
+}
+
+async function checkRateLimit(
+  req: Request,
+  endpoint: string,
+  maxRequests: number,
+  windowMs: number = 60_000
+): Promise<RateLimitResult> {
+  const ip = req.headers.get("x-nf-client-connection-ip") || "unknown";
+  const key = `rl:${endpoint}:${ip}`;
+  const now = Date.now();
+  try {
+    const store = getStore("rate-limit");
+    const raw = await store.get(key);
+    let timestamps: number[] = [];
+    if (raw) {
+      try { timestamps = JSON.parse(raw); } catch { timestamps = []; }
+    }
+    timestamps = timestamps.filter((t) => now - t < windowMs);
+    if (timestamps.length >= maxRequests) {
+      const oldest = timestamps[0];
+      const retryAfterSeconds = Math.ceil((oldest + windowMs - now) / 1000);
+      return { limited: true, retryAfterSeconds };
+    }
+    timestamps.push(now);
+    await store.set(key, JSON.stringify(timestamps));
+    return { limited: false, retryAfterSeconds: 0 };
+  } catch {
+    // If blob store fails, allow the request through
+    return { limited: false, retryAfterSeconds: 0 };
+  }
+}
 
 // ── Types ──
 interface ScrapeRequest {
@@ -147,7 +184,6 @@ async function fetchPage(url: string, opts: { headers?: Record<string, string>; 
       signal: controller.signal,
       redirect: "follow",
     });
-    // Detect PDF by content-type or URL extension
     if (isPdfResponse(resp.headers) || isPdfUrl(url)) {
       const buffer = Buffer.from(await resp.arrayBuffer());
       const parser = new PDFParse({ data: buffer });
