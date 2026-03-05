@@ -13,7 +13,6 @@ import type { Context, Config } from "@netlify/functions";
 import { load as cheerioLoad, type CheerioAPI } from "cheerio";
 import Anthropic from "@anthropic-ai/sdk";
 import pdfParse from "pdf-parse";
-import { checkRateLimit } from "./rate-limit.mts";
 
 // ── Types ──
 
@@ -609,10 +608,6 @@ export default async (req: Request, context: Context) => {
   if (req.method !== "POST") {
     return json({ error: "POST required" }, 405);
   }
-
-  // Rate limit
-  const rl = await checkRateLimit(req, "scrape", 30);
-  if (rl.limited) return json({ error: "Rate limit exceeded", retry_after: rl.retryAfterSeconds }, 429);
 
   // Auth
   const authErr = authenticate(req);
