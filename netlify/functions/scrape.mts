@@ -541,13 +541,14 @@ async function handleStructure(body: StructureRequest): Promise<Response> {
   const start = Date.now();
   const anthropic = new Anthropic({ apiKey });
 
-  // Truncate to ~100k chars to stay within token limits
-  const truncated = body.content.slice(0, 100_000);
+    // Truncate to ~50k chars to keep response time under Netlify timeout
+  const truncated = body.content.slice(0, 50_000);
   const hintLine = body.hint ? `\nHint about the data: ${body.hint}\n` : "";
 
+  // Use Haiku for speed — structure calls must finish within Netlify's timeout
   const resp = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 8192,
+    model: "claude-haiku-4-5-20251001",
+    max_tokens: 4096,
     messages: [
       {
         role: "user",
