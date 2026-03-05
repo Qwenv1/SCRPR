@@ -6,7 +6,7 @@
   node_bundler = "esbuild"
 
 [functions."scrape"]
-  timeout = 26
+  timeout = 60
 
 [[headers]]
   for = "/*"
