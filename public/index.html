@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SCRPR</title>
+  <title>SCRPR — URL &amp; PDF Extractor</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='80' font-size='80'%3E🔍%3C/text%3E%3C/svg%3E">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -21,575 +21,191 @@
       --accent-hover: #fb923c;
       --accent-glow: rgba(249, 115, 22, 0.15);
       --success: #22c55e;
-      --warning: #eab308;
       --error: #ef4444;
       --radius: 12px;
       --radius-sm: 8px;
       --mono: 'JetBrains Mono', monospace;
       --sans: 'Inter', -apple-system, sans-serif;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { background: var(--bg); color: var(--text); font-family: var(--sans); }
+    body { min-height: 100vh; display: flex; flex-direction: column; }
 
-    body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ── Header ── */
     .header {
       border-bottom: 1px solid var(--border);
       padding: 16px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0;
       background: rgba(10, 10, 10, 0.85);
       backdrop-filter: blur(20px);
       z-index: 50;
     }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .logo {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .logo { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
     .logo span { color: var(--accent); }
-
     .badge {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: 20px;
-      background: var(--accent-glow);
-      color: var(--accent);
+      font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+      background: var(--accent-glow); color: var(--accent);
       border: 1px solid rgba(249, 115, 22, 0.3);
     }
-
-    .back-link {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 13px;
-      transition: color 0.2s;
+    .auth-bar { display: flex; align-items: center; gap: 8px; }
+    .auth-bar input {
+      background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 8px 12px;
+      color: var(--text); font-size: 13px; font-family: var(--mono);
+      width: 220px; transition: border-color 0.2s;
     }
-    .back-link:hover { color: var(--text); }
+    .auth-bar input:focus { outline: none; border-color: var(--border-focus); }
+    .auth-status {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--text-muted); transition: background 0.3s;
+    }
+    .auth-status.ok { background: var(--success); }
 
-    /* ── Main layout ── */
     .main {
-      flex: 1;
-      display: flex;
-      max-width: 1400px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 24px;
-      gap: 24px;
+      flex: 1; display: flex; max-width: 1400px; width: 100%;
+      margin: 0 auto; padding: 24px; gap: 24px;
     }
-
     @media (max-width: 900px) {
       .main { flex-direction: column; }
       .panel-left, .panel-right { width: 100% !important; }
     }
+    .panel-left { width: 440px; flex-shrink: 0; }
+    .panel-right { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 
-    .panel-left { width: 440px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
-    .panel-right { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
-
-    /* ── Cards ── */
     .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
     }
-
     .card-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
     }
-
-    .card-title {
-      font-size: 14px;
-      font-weight: 600;
-    }
-
+    .card-title { font-size: 14px; font-weight: 600; }
     .card-body { padding: 20px; }
 
-    /* ── Auth bar ── */
-    .auth-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .auth-bar input {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 8px 12px;
-      color: var(--text);
-      font-size: 13px;
-      font-family: var(--mono);
-      width: 220px;
-      transition: border-color 0.2s;
-    }
-
-    .auth-bar input:focus {
-      outline: none;
-      border-color: var(--border-focus);
-    }
-
-    .auth-status {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--text-muted);
-      transition: background 0.3s;
-    }
-
-    .auth-status.ok { background: var(--success); }
-
-    /* ── Tabs ── */
-    .tabs {
-      display: flex;
-      gap: 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .tab {
-      padding: 12px 20px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-muted);
-      cursor: pointer;
-      border: none;
-      background: none;
-      position: relative;
-      transition: color 0.2s;
-    }
-
-    .tab:hover { color: var(--text-secondary); }
-
-    .tab.active {
-      color: var(--accent);
-    }
-
-    .tab.active::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: var(--accent);
-      border-radius: 2px 2px 0 0;
-    }
-
-    /* ── Forms ── */
     .form-group { margin-bottom: 16px; }
-
     .form-group:last-child { margin-bottom: 0; }
-
     label {
-      display: block;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      display: block; font-size: 12px; font-weight: 500;
+      color: var(--text-secondary); margin-bottom: 6px;
+      text-transform: uppercase; letter-spacing: 0.5px;
     }
-
-    .url-input-wrap {
-      display: flex;
-      gap: 8px;
-    }
-
+    .url-input-wrap { display: flex; gap: 8px; }
     .url-input {
-      flex: 1;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 10px 14px;
-      color: var(--text);
-      font-size: 14px;
-      font-family: var(--sans);
+      flex: 1; background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 12px 14px;
+      color: var(--text); font-size: 14px; font-family: var(--sans);
       transition: border-color 0.2s;
     }
-
     .url-input:focus {
-      outline: none;
-      border-color: var(--border-focus);
+      outline: none; border-color: var(--border-focus);
       box-shadow: 0 0 0 3px var(--accent-glow);
     }
-
     .url-input::placeholder { color: var(--text-muted); }
 
-    select, .field-input {
-      width: 100%;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 8px 12px;
-      color: var(--text);
-      font-size: 13px;
-      font-family: var(--sans);
-      transition: border-color 0.2s;
-    }
-
-    select:focus, .field-input:focus {
-      outline: none;
-      border-color: var(--border-focus);
-    }
-
-    textarea.field-input {
-      min-height: 80px;
-      resize: vertical;
-      font-family: var(--mono);
-      font-size: 12px;
-    }
-
-    .row {
-      display: flex;
-      gap: 12px;
-    }
-
-    .row > * { flex: 1; }
-
-    .checkbox-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 0;
-    }
-
-    .checkbox-row input[type="checkbox"] {
-      accent-color: var(--accent);
-      width: 16px;
-      height: 16px;
-    }
-
-    .checkbox-row span {
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-
-    /* ── Buttons ── */
     .btn-primary {
-      background: var(--accent);
-      color: #fff;
-      font-weight: 600;
-      font-size: 14px;
-      padding: 10px 24px;
-      border-radius: var(--radius-sm);
-      border: none;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      white-space: nowrap;
+      background: var(--accent); color: #fff; font-weight: 600; font-size: 14px;
+      padding: 12px 28px; border-radius: var(--radius-sm); border: none;
+      cursor: pointer; transition: background 0.2s, transform 0.1s; white-space: nowrap;
     }
-
     .btn-primary:hover { background: var(--accent-hover); }
     .btn-primary:active { transform: scale(0.97); }
-
-    .btn-primary:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
     .btn-secondary {
-      background: var(--bg-input);
-      color: var(--text-secondary);
-      font-weight: 500;
-      font-size: 13px;
-      padding: 8px 16px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      cursor: pointer;
+      background: var(--bg-input); color: var(--text-secondary); font-weight: 500;
+      font-size: 13px; padding: 8px 16px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); cursor: pointer;
       transition: background 0.2s, color 0.2s;
     }
+    .btn-secondary:hover { background: var(--bg-card-hover); color: var(--text); }
 
-    .btn-secondary:hover {
-      background: var(--bg-card-hover);
-      color: var(--text);
+    .hint {
+      font-size: 12px; color: var(--text-muted); margin-top: 8px; line-height: 1.5;
     }
 
-    /* ── Selectors builder ── */
-    .selectors-list { display: flex; flex-direction: column; gap: 8px; }
-
-    .selector-row {
-      display: flex;
-      gap: 8px;
-      align-items: flex-start;
+    .pdf-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+      background: rgba(239, 68, 68, 0.1); color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    .html-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+      background: rgba(59, 130, 246, 0.1); color: #3b82f6;
+      border: 1px solid rgba(59, 130, 246, 0.2);
     }
 
-    .selector-row input {
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 8px 10px;
-      color: var(--text);
-      font-size: 12px;
-      font-family: var(--mono);
-    }
-
-    .selector-row input:first-child { width: 100px; }
-    .selector-row input:nth-child(2) { flex: 1; }
-    .selector-row input:nth-child(3) { width: 80px; }
-
-    .btn-icon {
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--bg-input);
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 16px;
-      transition: color 0.2s, border-color 0.2s;
-      flex-shrink: 0;
-    }
-
-    .btn-icon:hover { color: var(--text); border-color: var(--text-muted); }
-    .btn-icon.danger:hover { color: var(--error); border-color: var(--error); }
-
-    /* ── Results ── */
     .result-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 8px;
     }
-
     .result-meta {
-      display: flex;
-      gap: 16px;
-      font-size: 12px;
-      color: var(--text-muted);
+      display: flex; gap: 16px; font-size: 12px; color: var(--text-muted);
     }
-
     .result-meta .val { color: var(--text-secondary); font-weight: 500; }
-
     .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 2px 10px;
-      border-radius: 20px;
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 20px;
     }
-
     .status-badge.success { background: rgba(34, 197, 94, 0.1); color: var(--success); }
     .status-badge.error { background: rgba(239, 68, 68, 0.1); color: var(--error); }
-    .status-badge.warning { background: rgba(234, 179, 8, 0.1); color: var(--warning); }
 
     .result-content {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 16px;
-      font-family: var(--mono);
-      font-size: 12px;
-      line-height: 1.6;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px;
+      font-family: var(--mono); font-size: 12px; line-height: 1.6;
       color: var(--text-secondary);
-      max-height: 600px;
-      overflow: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
-      margin-top: 12px;
+      max-height: 70vh; overflow: auto;
+      white-space: pre-wrap; word-break: break-word; margin-top: 12px;
     }
-
     .result-content::-webkit-scrollbar { width: 6px; }
     .result-content::-webkit-scrollbar-track { background: transparent; }
     .result-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-    /* ── Crawl results list ── */
-    .crawl-pages { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-
-    .crawl-page {
-      background: var(--bg);
-      border: 1px solid var(--border);
+    .meta-grid {
+      display: grid; grid-template-columns: 120px 1fr; gap: 4px 12px;
+      font-size: 12px; padding: 12px 14px; margin-bottom: 12px;
+      background: var(--bg); border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      overflow: hidden;
     }
+    .meta-key { color: var(--text-muted); }
+    .meta-val { color: var(--text-secondary); word-break: break-all; }
 
-    .crawl-page-header {
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .crawl-page-header:hover { background: var(--bg-card-hover); }
-
-    .crawl-page-url {
-      font-size: 12px;
-      font-family: var(--mono);
-      color: var(--accent);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      flex: 1;
-    }
-
-    .crawl-page-info {
-      display: flex;
-      gap: 12px;
-      font-size: 11px;
-      color: var(--text-muted);
-      flex-shrink: 0;
-      margin-left: 12px;
-    }
-
-    .crawl-page-body {
-      display: none;
-      border-top: 1px solid var(--border);
-      padding: 12px 14px;
-      font-family: var(--mono);
-      font-size: 12px;
-      line-height: 1.6;
-      color: var(--text-secondary);
-      max-height: 300px;
-      overflow: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .crawl-page.open .crawl-page-body { display: block; }
-    .crawl-page.open .crawl-page-header { background: var(--bg-card-hover); }
-
-    .chevron {
-      transition: transform 0.2s;
-      color: var(--text-muted);
-      font-size: 12px;
-      margin-left: 8px;
-    }
-
-    .crawl-page.open .chevron { transform: rotate(180deg); }
-
-    /* ── Empty state ── */
     .empty-state {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 60px 20px;
-      color: var(--text-muted);
-      text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 80px 20px;
+      color: var(--text-muted); text-align: center;
     }
+    .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+    .empty-state p { font-size: 14px; max-width: 300px; line-height: 1.5; }
 
-    .empty-icon {
-      font-size: 48px;
-      margin-bottom: 16px;
-      opacity: 0.3;
-    }
-
-    .empty-state p {
-      font-size: 14px;
-      max-width: 300px;
-      line-height: 1.5;
-    }
-
-    /* ── Loading ── */
     .loading-bar {
-      height: 2px;
-      background: var(--border);
-      position: relative;
-      overflow: hidden;
-      display: none;
+      height: 2px; background: var(--border);
+      position: relative; overflow: hidden; display: none;
     }
-
     .loading-bar.active { display: block; }
-
     .loading-bar::after {
-      content: '';
-      position: absolute;
-      left: -40%;
-      width: 40%;
-      height: 100%;
-      background: var(--accent);
-      animation: loading 1s ease-in-out infinite;
+      content: ''; position: absolute; left: -40%; width: 40%; height: 100%;
+      background: var(--accent); animation: loading 1s ease-in-out infinite;
     }
-
     @keyframes loading {
       0% { left: -40%; }
       100% { left: 100%; }
     }
 
-    /* ── Tab panels ── */
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    /* ── Extracted data table ── */
-    .extract-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      margin-top: 12px;
-    }
-
-    .extract-table th {
-      text-align: left;
-      padding: 8px 12px;
-      font-weight: 600;
-      font-size: 12px;
-      color: var(--text-secondary);
-      border-bottom: 1px solid var(--border);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .extract-table td {
-      padding: 8px 12px;
-      color: var(--text-secondary);
-      border-bottom: 1px solid rgba(39, 39, 42, 0.5);
-      font-family: var(--mono);
-      font-size: 12px;
-      word-break: break-all;
-    }
-
-    .extract-table tr:hover td { background: var(--bg-card-hover); }
-
-    /* ── Utilities ── */
     .hidden { display: none !important; }
-    .mt-8 { margin-top: 8px; }
-    .mt-12 { margin-top: 12px; }
 
     .toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 12px 20px;
-      font-size: 13px;
-      color: var(--text-secondary);
-      z-index: 100;
-      animation: fadeInUp 0.3s ease;
-      max-width: 360px;
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 12px 20px;
+      font-size: 13px; color: var(--text-secondary); z-index: 100;
+      animation: fadeInUp 0.3s ease; max-width: 360px;
     }
-
     .toast.error { border-color: var(--error); color: var(--error); }
-
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
@@ -598,7 +214,6 @@
 </head>
 <body>
 
-  <!-- Header -->
   <header class="header">
     <div class="header-left">
       <div class="logo"><span>SCRPR</span></div>
@@ -610,177 +225,48 @@
     </div>
   </header>
 
-  <!-- Main -->
   <div class="main">
-    <!-- Left panel: controls -->
     <div class="panel-left">
-      <!-- Mode tabs -->
-      <div class="card">
-        <div class="tabs">
-          <button class="tab active" data-tab="scrape">Scrape</button>
-          <button class="tab" data-tab="crawl">Crawl</button>
-          <button class="tab" data-tab="extract">Extract</button>
-        </div>
-
-        <!-- Scrape panel -->
-        <div class="tab-panel active" id="panel-scrape">
-          <div class="card-body">
-            <div class="form-group">
-              <label>URL</label>
-              <div class="url-input-wrap">
-                <input type="url" class="url-input" id="scrapeUrl" placeholder="https://example.com">
-                <button class="btn-primary" id="scrapeBtn">Scrape</button>
-              </div>
-            </div>
-            <div class="row">
-              <div class="form-group">
-                <label>Format</label>
-                <select id="scrapeFormat">
-                  <option value="markdown">Markdown</option>
-                  <option value="html">Clean HTML</option>
-                  <option value="text">Plain Text</option>
-                  <option value="raw">Raw HTML</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <div class="checkbox-row">
-                <input type="checkbox" id="scrapeMetadata" checked>
-                <span>Include metadata</span>
-              </div>
-              <div class="checkbox-row">
-                <input type="checkbox" id="scrapeStealth" checked>
-                <span>Stealth mode (browser headers)</span>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Custom headers (JSON, optional)</label>
-              <textarea class="field-input" id="scrapeHeaders" placeholder='{"Cookie": "session=abc"}'></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- Crawl panel -->
-        <div class="tab-panel" id="panel-crawl">
-          <div class="card-body">
-            <div class="form-group">
-              <label>Start URL</label>
-              <div class="url-input-wrap">
-                <input type="url" class="url-input" id="crawlUrl" placeholder="https://example.com">
-                <button class="btn-primary" id="crawlBtn">Crawl</button>
-              </div>
-            </div>
-            <div class="row">
-              <div class="form-group">
-                <label>Max depth</label>
-                <select id="crawlDepth">
-                  <option value="1">1</option>
-                  <option value="2" selected>2</option>
-                  <option value="3">3</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Max pages</label>
-                <select id="crawlPages">
-                  <option value="5">5</option>
-                  <option value="10" selected>10</option>
-                  <option value="20">20</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label>Format</label>
-                <select id="crawlFormat">
-                  <option value="markdown">Markdown</option>
-                  <option value="html">HTML</option>
-                  <option value="text">Text</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Include pattern (regex, optional)</label>
-              <input class="field-input" id="crawlInclude" placeholder="/blog/.*">
-            </div>
-            <div class="form-group">
-              <label>Exclude pattern (regex, optional)</label>
-              <input class="field-input" id="crawlExclude" placeholder="\.(pdf|zip)$">
-            </div>
-          </div>
-        </div>
-
-        <!-- Extract panel -->
-        <div class="tab-panel" id="panel-extract">
-          <div class="card-body">
-            <div class="form-group">
-              <label>URL</label>
-              <div class="url-input-wrap">
-                <input type="url" class="url-input" id="extractUrl" placeholder="https://example.com">
-                <button class="btn-primary" id="extractBtn">Extract</button>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Selectors</label>
-              <div class="selectors-list" id="selectorsList">
-                <div class="selector-row">
-                  <input type="text" placeholder="key" value="title">
-                  <input type="text" placeholder="CSS selector" value="h1">
-                  <input type="text" placeholder="attr">
-                  <button class="btn-icon danger" onclick="this.closest('.selector-row').remove()" title="Remove">×</button>
-                </div>
-              </div>
-              <button class="btn-secondary mt-8" id="addSelectorBtn">+ Add selector</button>
-            </div>
-            <div class="form-group">
-              <label>Custom headers (JSON, optional)</label>
-              <textarea class="field-input" id="extractHeaders" placeholder='{"Cookie": "session=abc"}'></textarea>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick examples -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">Quick examples</div>
+          <div class="card-title">Extract Content</div>
         </div>
-        <div class="card-body" style="display:flex;flex-direction:column;gap:6px;">
-          <button class="btn-secondary" onclick="loadExample('scrape','https://news.ycombinator.com')">Scrape Hacker News</button>
-          <button class="btn-secondary" onclick="loadExample('scrape','https://quotes.toscrape.com')">Scrape Quotes</button>
-          <button class="btn-secondary" onclick="loadExample('crawl','https://quotes.toscrape.com')">Crawl Quotes (depth 2)</button>
-          <button class="btn-secondary" onclick="loadExample('extract-hn','https://news.ycombinator.com')">Extract HN titles</button>
+        <div class="card-body">
+          <div class="form-group">
+            <label>URL</label>
+            <div class="url-input-wrap">
+              <input type="url" class="url-input" id="scrapeUrl" placeholder="https://example.com/report.pdf">
+              <button class="btn-primary" id="scrapeBtn">Extract</button>
+            </div>
+            <p class="hint">Paste any URL — PDFs are automatically detected and text-extracted. HTML pages return markdown.</p>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Right panel: results -->
     <div class="panel-right">
       <div class="card" style="flex:1;display:flex;flex-direction:column;">
         <div class="card-header">
-          <div class="result-header" id="resultHeader">
-            <div class="card-title">Results</div>
-          </div>
+          <div class="card-title">Results</div>
         </div>
         <div class="loading-bar" id="loadingBar"></div>
         <div class="card-body" style="flex:1;overflow:auto;" id="resultBody">
           <div class="empty-state" id="emptyState">
             <div class="empty-icon">&#9678;</div>
-            <p>Enter a URL and hit Scrape, Crawl, or Extract to get started.</p>
+            <p>Paste a URL and hit Extract to pull content from any webpage or PDF.</p>
           </div>
           <div class="hidden" id="scrapeResult"></div>
-          <div class="hidden" id="crawlResult"></div>
-          <div class="hidden" id="extractResult"></div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    // ── State ──
     const $ = (s) => document.querySelector(s);
-    const $$ = (s) => document.querySelectorAll(s);
 
     function getToken() { return $('#tokenInput').value.trim(); }
 
-    // Persist token in sessionStorage
+    // Persist token
     const saved = sessionStorage.getItem('scraper_token');
     if (saved) {
       $('#tokenInput').value = saved;
@@ -794,275 +280,90 @@
       $('#authStatus').title = t ? 'Token set' : 'Not authenticated';
     });
 
-    // ── Tabs ──
-    $$('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        $$('.tab').forEach(t => t.classList.remove('active'));
-        $$('.tab-panel').forEach(p => p.classList.remove('active'));
-        tab.classList.add('active');
-        $(`#panel-${tab.dataset.tab}`).classList.add('active');
-      });
-    });
-
-    // ── Add selector row ──
-    $('#addSelectorBtn').addEventListener('click', () => {
-      const row = document.createElement('div');
-      row.className = 'selector-row';
-      row.innerHTML = `
-        <input type="text" placeholder="key">
-        <input type="text" placeholder="CSS selector">
-        <input type="text" placeholder="attr">
-        <button class="btn-icon danger" onclick="this.closest('.selector-row').remove()" title="Remove">×</button>
-      `;
-      $('#selectorsList').appendChild(row);
-    });
-
-    // ── API call helper ──
-    async function apiCall(action, body) {
-      const token = getToken();
-      if (!token) { showToast('Enter your admin token first', true); return null; }
-
-      showLoading(true);
-      hideResults();
-
-      try {
-        const resp = await fetch(`/api/scrape?action=${action}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Admin-Token': token,
-          },
-          body: JSON.stringify(body),
-        });
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
-        return data;
-      } catch (e) {
-        showToast(e.message, true);
-        return null;
-      } finally {
-        showLoading(false);
-      }
-    }
-
-    function parseHeaders(raw) {
-      if (!raw.trim()) return undefined;
-      try { return JSON.parse(raw); }
-      catch { showToast('Invalid JSON in custom headers', true); return undefined; }
-    }
-
-    // ── Scrape ──
+    // Extract button
     $('#scrapeBtn').addEventListener('click', async () => {
       const url = $('#scrapeUrl').value.trim();
       if (!url) { showToast('Enter a URL', true); return; }
 
-      const headers = parseHeaders($('#scrapeHeaders').value);
-      const data = await apiCall('scrape', {
-        url,
-        format: $('#scrapeFormat').value,
-        include_metadata: $('#scrapeMetadata').checked,
-        stealth: $('#scrapeStealth').checked,
-        headers,
-      });
+      const token = getToken();
+      if (!token) { showToast('Enter your admin token first', true); return; }
 
-      if (data?.success) renderScrapeResult(data.data);
-    });
-
-    // ── Crawl ──
-    $('#crawlBtn').addEventListener('click', async () => {
-      const url = $('#crawlUrl').value.trim();
-      if (!url) { showToast('Enter a URL', true); return; }
-
-      const data = await apiCall('crawl', {
-        url,
-        max_depth: parseInt($('#crawlDepth').value),
-        max_pages: parseInt($('#crawlPages').value),
-        format: $('#crawlFormat').value,
-        include_pattern: $('#crawlInclude').value.trim() || undefined,
-        exclude_pattern: $('#crawlExclude').value.trim() || undefined,
-      });
-
-      if (data?.success) renderCrawlResult(data.data);
-    });
-
-    // ── Extract ──
-    $('#extractBtn').addEventListener('click', async () => {
-      const url = $('#extractUrl').value.trim();
-      if (!url) { showToast('Enter a URL', true); return; }
-
-      const selectors = {};
-      $$('#selectorsList .selector-row').forEach(row => {
-        const inputs = row.querySelectorAll('input');
-        const key = inputs[0].value.trim();
-        const selector = inputs[1].value.trim();
-        const attribute = inputs[2].value.trim() || undefined;
-        if (key && selector) selectors[key] = { selector, attribute, multiple: true };
-      });
-
-      if (Object.keys(selectors).length === 0) {
-        showToast('Add at least one selector', true);
-        return;
-      }
-
-      const headers = parseHeaders($('#extractHeaders').value);
-      const data = await apiCall('extract', { url, selectors, headers });
-
-      if (data?.success) renderExtractResult(data.data);
-    });
-
-    // ── Render results ──
-
-    function hideResults() {
+      showLoading(true);
       $('#emptyState').classList.add('hidden');
       $('#scrapeResult').classList.add('hidden');
-      $('#crawlResult').classList.add('hidden');
-      $('#extractResult').classList.add('hidden');
-    }
 
-    function renderScrapeResult(d) {
+      try {
+        const resp = await fetch('/api/scrape?action=scrape', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
+          body: JSON.stringify({ url, format: 'markdown', include_metadata: true, stealth: true }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+        if (data.success) renderResult(data.data);
+      } catch (e) {
+        showToast(e.message, true);
+      } finally {
+        showLoading(false);
+      }
+    });
+
+    // Keyboard shortcut: Ctrl/Cmd + Enter
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        const btn = $('#scrapeBtn');
+        if (btn && !btn.disabled) btn.click();
+      }
+    });
+
+    // Also trigger on Enter in URL field
+    $('#scrapeUrl').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const btn = $('#scrapeBtn');
+        if (btn && !btn.disabled) btn.click();
+      }
+    });
+
+    function renderResult(d) {
       const el = $('#scrapeResult');
       el.classList.remove('hidden');
 
-      const statusClass = d.status >= 200 && d.status < 400 ? 'success' : d.status >= 400 ? 'error' : 'warning';
+      const isPdf = d.format === 'pdf';
+      const statusClass = d.status >= 200 && d.status < 400 ? 'success' : 'error';
+      const typeBadge = isPdf
+        ? `<span class="pdf-badge">PDF · ${d.page_count || '?'} pages</span>`
+        : `<span class="html-badge">HTML</span>`;
+
+      let metaHtml = '';
+      if (d.metadata) {
+        const entries = Object.entries(d.metadata).filter(([k, v]) => v && k !== 'url');
+        if (entries.length) {
+          metaHtml = `<div class="meta-grid">${entries.map(([k, v]) =>
+            `<span class="meta-key">${esc(k)}</span><span class="meta-val">${esc(String(v))}</span>`
+          ).join('')}</div>`;
+        }
+      }
 
       el.innerHTML = `
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
           <div style="display:flex;align-items:center;gap:8px;">
             <span class="status-badge ${statusClass}">${d.status}</span>
-            <span style="font-size:13px;font-weight:500;">${escHtml(d.title || 'Untitled')}</span>
+            ${typeBadge}
+            <span style="font-size:13px;font-weight:500;">${esc(d.title || 'Untitled')}</span>
           </div>
           <div class="result-meta">
-            <span>${d.word_count?.toLocaleString() || 0} <span class="val">words</span></span>
+            <span>${(d.word_count || 0).toLocaleString()} <span class="val">words</span></span>
             <span>${d.elapsed_ms} <span class="val">ms</span></span>
             <button class="btn-secondary" onclick="copyResult()">Copy</button>
           </div>
         </div>
-        ${d.metadata ? renderMetadata(d.metadata) : ''}
-        <div class="result-content" id="resultText">${escHtml(d.content)}</div>
+        ${metaHtml}
+        <div class="result-content" id="resultText">${esc(d.content)}</div>
       `;
     }
 
-    function renderMetadata(meta) {
-      const entries = Object.entries(meta).filter(([k]) => k !== 'url');
-      if (!entries.length) return '';
-      return `<div style="margin-bottom:12px;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);">
-        ${entries.map(([k, v]) => `<div style="display:flex;gap:8px;font-size:12px;padding:2px 0;">
-          <span style="color:var(--text-muted);min-width:120px;">${escHtml(k)}</span>
-          <span style="color:var(--text-secondary);word-break:break-all;">${escHtml(String(v))}</span>
-        </div>`).join('')}
-      </div>`;
-    }
-
-    function renderCrawlResult(d) {
-      const el = $('#crawlResult');
-      el.classList.remove('hidden');
-
-      el.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span class="status-badge success">${d.pages_scraped} pages</span>
-            <span style="font-size:12px;color:var(--text-muted);">${d.pages_discovered} discovered</span>
-          </div>
-          <div class="result-meta">
-            <span>${d.total_elapsed_ms} <span class="val">ms total</span></span>
-          </div>
-        </div>
-        <div class="crawl-pages">
-          ${d.results.map((page, i) => `
-            <div class="crawl-page" id="crawl-page-${i}">
-              <div class="crawl-page-header" onclick="document.getElementById('crawl-page-${i}').classList.toggle('open')">
-                <span class="crawl-page-url">${escHtml(page.url)}</span>
-                <div class="crawl-page-info">
-                  <span>${page.status}</span>
-                  <span>${page.word_count || 0}w</span>
-                  <span>${page.elapsed_ms}ms</span>
-                  <span class="chevron">▼</span>
-                </div>
-              </div>
-              <div class="crawl-page-body">${escHtml(page.content)}</div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-    }
-
-    function renderExtractResult(d) {
-      const el = $('#extractResult');
-      el.classList.remove('hidden');
-
-      const statusClass = d.status >= 200 && d.status < 400 ? 'success' : 'error';
-      const entries = Object.entries(d.extracted);
-
-      el.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span class="status-badge ${statusClass}">${d.status}</span>
-            <span style="font-size:12px;color:var(--text-muted);">${entries.length} fields extracted</span>
-          </div>
-          <div class="result-meta">
-            <span>${d.elapsed_ms} <span class="val">ms</span></span>
-            <button class="btn-secondary" onclick="copyExtract()">Copy JSON</button>
-          </div>
-        </div>
-        <table class="extract-table">
-          <thead><tr><th>Key</th><th>Value</th></tr></thead>
-          <tbody>
-            ${entries.map(([k, v]) => `<tr>
-              <td style="font-weight:500;color:var(--accent);">${escHtml(k)}</td>
-              <td>${Array.isArray(v) ? v.map(x => escHtml(x)).join('<br>') : escHtml(String(v))}</td>
-            </tr>`).join('')}
-          </tbody>
-        </table>
-        <div class="result-content mt-12" id="extractJson">${escHtml(JSON.stringify(d.extracted, null, 2))}</div>
-      `;
-    }
-
-    // ── Examples ──
-    function loadExample(type, url) {
-      if (type === 'scrape') {
-        $$('.tab').forEach(t => t.classList.remove('active'));
-        $$('.tab-panel').forEach(p => p.classList.remove('active'));
-        document.querySelector('[data-tab="scrape"]').classList.add('active');
-        $('#panel-scrape').classList.add('active');
-        $('#scrapeUrl').value = url;
-        $('#scrapeFormat').value = 'markdown';
-      } else if (type === 'crawl') {
-        $$('.tab').forEach(t => t.classList.remove('active'));
-        $$('.tab-panel').forEach(p => p.classList.remove('active'));
-        document.querySelector('[data-tab="crawl"]').classList.add('active');
-        $('#panel-crawl').classList.add('active');
-        $('#crawlUrl').value = url;
-      } else if (type === 'extract-hn') {
-        $$('.tab').forEach(t => t.classList.remove('active'));
-        $$('.tab-panel').forEach(p => p.classList.remove('active'));
-        document.querySelector('[data-tab="extract"]').classList.add('active');
-        $('#panel-extract').classList.add('active');
-        $('#extractUrl').value = url;
-        $('#selectorsList').innerHTML = `
-          <div class="selector-row">
-            <input type="text" placeholder="key" value="titles">
-            <input type="text" placeholder="CSS selector" value=".titleline > a">
-            <input type="text" placeholder="attr">
-            <button class="btn-icon danger" onclick="this.closest('.selector-row').remove()" title="Remove">×</button>
-          </div>
-          <div class="selector-row">
-            <input type="text" placeholder="key" value="scores">
-            <input type="text" placeholder="CSS selector" value=".score">
-            <input type="text" placeholder="attr">
-            <button class="btn-icon danger" onclick="this.closest('.selector-row').remove()" title="Remove">×</button>
-          </div>
-          <div class="selector-row">
-            <input type="text" placeholder="key" value="links">
-            <input type="text" placeholder="CSS selector" value=".titleline > a">
-            <input type="text" placeholder="attr" value="href">
-            <button class="btn-icon danger" onclick="this.closest('.selector-row').remove()" title="Remove">×</button>
-          </div>
-        `;
-      }
-    }
-
-    // ── Helpers ──
-    function escHtml(s) {
+    function esc(s) {
       const d = document.createElement('div');
       d.textContent = s;
       return d.innerHTML;
@@ -1070,16 +371,13 @@
 
     function showLoading(on) {
       $('#loadingBar').classList.toggle('active', on);
-      $$('.btn-primary').forEach(b => b.disabled = on);
+      $('#scrapeBtn').disabled = on;
+      if (on) $('#scrapeBtn').textContent = 'Extracting…';
+      else $('#scrapeBtn').textContent = 'Extract';
     }
 
     function copyResult() {
       const el = document.getElementById('resultText');
-      if (el) navigator.clipboard.writeText(el.textContent).then(() => showToast('Copied to clipboard'));
-    }
-
-    function copyExtract() {
-      const el = document.getElementById('extractJson');
       if (el) navigator.clipboard.writeText(el.textContent).then(() => showToast('Copied to clipboard'));
     }
 
@@ -1094,17 +392,6 @@
       clearTimeout(toastTimer);
       toastTimer = setTimeout(() => t.remove(), 3000);
     }
-
-    // ── Keyboard shortcut ──
-    document.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-        const active = document.querySelector('.tab.active');
-        if (active) {
-          const btn = document.getElementById(active.dataset.tab + 'Btn');
-          if (btn && !btn.disabled) btn.click();
-        }
-      }
-    });
   </script>
 </body>
 </html>
