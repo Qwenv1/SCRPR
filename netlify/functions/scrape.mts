@@ -12,7 +12,7 @@
 import type { Context, Config } from "@netlify/functions";
 import { load as cheerioLoad, type CheerioAPI } from "cheerio";
 import Anthropic from "@anthropic-ai/sdk";
-import { PDFParse } from "pdf-parse";
+import pdfParse from "pdf-parse";
 import { checkRateLimit } from "./rate-limit.mts";
 
 // ── Types ──
