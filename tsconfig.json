@@ -4,11 +4,11 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "skipLibCheck": true,
     "esModuleInterop": true,
-    "types": ["node"]
+    "skipLibCheck": true,
+    "outDir": "dist",
+    "declaration": true
   },
   "include": ["netlify/functions/**/*.mts"]
 }
+
