@@ -1,39 +1,13 @@
 [build]
   publish = "public"
+  functions = "netlify/functions"
 
 [functions]
-  directory = "netlify/functions"
   node_bundler = "esbuild"
-
-[functions."auth"]
-  timeout = 26
-
-[functions."valuate"]
-  timeout = 30
-
-[functions."health"]
-  timeout = 26
-
-[functions."feedback"]
-  timeout = 20
-
-[functions."generate-card"]
-  timeout = 45
-
-[functions."scrape"]
-  timeout = 60
 
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Content-Type-Options = "nosniff"
     X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(self), microphone=(), geolocation=(self)"
-    X-XSS-Protection = "1; mode=block"
-    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com https://appleid.cdn-apple.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; img-src 'self' data: blob: https:; connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com https://appleid.apple.com https://*.fal.run https://fal.media; font-src 'self' https://fonts.gstatic.com; frame-src https://about.mktvlu.co https://accounts.google.com https://appleid.apple.com; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://appleid.apple.com; upgrade-insecure-requests"
-    # NOTE: script-src 'unsafe-inline' is required because the PWA is a single inline-script SPA.
-    # Migrating to nonce-based CSP requires a Netlify Edge Function to inject nonces per-request.
-    # TODO: Extract inline JS to external file to enable strict CSP without 'unsafe-inline'.
-    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
