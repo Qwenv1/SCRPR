@@ -8,331 +8,188 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0a0a0a;
-      --bg-card: #111113;
-      --bg-card-hover: #1a1a1e;
-      --bg-input: #18181b;
-      --border: #27272a;
-      --border-focus: #f97316;
-      --text: #fafafa;
-      --text-secondary: #a1a1aa;
-      --text-muted: #71717a;
-      --accent: #f97316;
-      --accent-hover: #fb923c;
-      --accent-glow: rgba(249, 115, 22, 0.15);
-      --success: #22c55e;
-      --error: #ef4444;
-      --purple: #818cf8;
-      --purple-glow: rgba(99, 102, 241, 0.15);
-      --radius: 12px;
-      --radius-sm: 8px;
+      --bg: #0a0a0a; --bg-card: #111113; --bg-card-hover: #1a1a1e;
+      --bg-input: #18181b; --border: #27272a; --border-focus: #f97316;
+      --text: #fafafa; --text-secondary: #a1a1aa; --text-muted: #71717a;
+      --accent: #f97316; --accent-hover: #fb923c; --accent-glow: rgba(249,115,22,0.15);
+      --success: #22c55e; --error: #ef4444; --purple: #818cf8;
+      --purple-glow: rgba(99,102,241,0.15);
+      --radius: 12px; --radius-sm: 8px;
       --mono: 'JetBrains Mono', monospace;
       --sans: 'Inter', -apple-system, sans-serif;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { background: var(--bg); color: var(--text); font-family: var(--sans); }
-    body { min-height: 100vh; display: flex; flex-direction: column; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { background:var(--bg); color:var(--text); font-family:var(--sans); }
+    body { min-height:100vh; display:flex; flex-direction:column; }
 
-    /* ── Header ── */
-    .header {
-      border-bottom: 1px solid var(--border); padding: 16px 24px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; background: rgba(10,10,10,0.85);
-      backdrop-filter: blur(20px); z-index: 50;
-    }
-    .header-left { display: flex; align-items: center; gap: 12px; }
-    .logo { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
-    .logo span { color: var(--accent); }
-    .badge {
-      font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
-      background: var(--accent-glow); color: var(--accent);
-      border: 1px solid rgba(249,115,22,0.3);
-    }
-    .auth-bar { display: flex; align-items: center; gap: 8px; }
-    .auth-bar input {
-      background: var(--bg-input); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 8px 12px;
-      color: var(--text); font-size: 13px; font-family: var(--mono);
-      width: 220px; transition: border-color 0.2s;
-    }
-    .auth-bar input:focus { outline: none; border-color: var(--border-focus); }
-    .auth-status { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); transition: background 0.3s; }
-    .auth-status.ok { background: var(--success); }
+    /* Header */
+    .header { border-bottom:1px solid var(--border); padding:16px 24px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; background:rgba(10,10,10,0.85); backdrop-filter:blur(20px); z-index:50; }
+    .header-left { display:flex; align-items:center; gap:12px; }
+    .logo { font-size:20px; font-weight:700; letter-spacing:-0.5px; }
+    .logo span { color:var(--accent); }
+    .badge { font-size:11px; font-weight:600; padding:2px 8px; border-radius:20px; background:var(--accent-glow); color:var(--accent); border:1px solid rgba(249,115,22,0.3); }
+    .auth-bar { display:flex; align-items:center; gap:8px; }
+    .auth-bar input { background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 12px; color:var(--text); font-size:13px; font-family:var(--mono); width:220px; transition:border-color 0.2s; }
+    .auth-bar input:focus { outline:none; border-color:var(--border-focus); }
+    .auth-status { width:8px; height:8px; border-radius:50%; background:var(--text-muted); transition:background 0.3s; }
+    .auth-status.ok { background:var(--success); }
 
-    /* ── Nav tabs ── */
-    .nav-tabs {
-      border-bottom: 1px solid var(--border); padding: 0 24px;
-      display: flex; gap: 0; background: var(--bg);
-    }
-    .nav-tab {
-      padding: 14px 24px; font-size: 13px; font-weight: 500;
-      color: var(--text-muted); cursor: pointer; border: none; background: none;
-      position: relative; transition: color 0.2s;
-    }
-    .nav-tab:hover { color: var(--text-secondary); }
-    .nav-tab.active { color: var(--accent); }
-    .nav-tab.active::after {
-      content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
-      height: 2px; background: var(--accent); border-radius: 2px 2px 0 0;
-    }
+    /* Nav */
+    .nav-tabs { border-bottom:1px solid var(--border); padding:0 24px; display:flex; gap:0; background:var(--bg); }
+    .nav-tab { padding:14px 24px; font-size:13px; font-weight:500; color:var(--text-muted); cursor:pointer; border:none; background:none; position:relative; transition:color 0.2s; }
+    .nav-tab:hover { color:var(--text-secondary); }
+    .nav-tab.active { color:var(--accent); }
+    .nav-tab.active::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:2px; background:var(--accent); border-radius:2px 2px 0 0; }
 
-    /* ── Page panels ── */
-    .page { display: none; flex: 1; flex-direction: column; }
-    .page.active { display: flex; }
+    /* Pages */
+    .page { display:none; flex:1; flex-direction:column; }
+    .page.active { display:flex; }
+    .main { flex:1; display:flex; flex-direction:column; max-width:1600px; width:100%; margin:0 auto; padding:24px; gap:16px; }
 
-    .main {
-      flex: 1; display: flex; flex-direction: column;
-      max-width: 1600px; width: 100%;
-      margin: 0 auto; padding: 24px; gap: 16px;
-    }
+    /* Cards */
+    .card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+    .card-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+    .card-title { font-size:14px; font-weight:600; }
+    .card-body { padding:20px; }
 
-    /* ── Cards ── */
-    .card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius); overflow: hidden;
-    }
-    .card-header {
-      padding: 16px 20px; border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
-    }
-    .card-title { font-size: 14px; font-weight: 600; }
-    .card-body { padding: 20px; }
+    /* Forms */
+    label { display:block; font-size:12px; font-weight:500; color:var(--text-secondary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
+    .input-row { display:flex; gap:8px; align-items:center; }
+    .url-input { flex:1; background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; color:var(--text); font-size:14px; font-family:var(--sans); transition:border-color 0.2s; }
+    .url-input:focus { outline:none; border-color:var(--border-focus); box-shadow:0 0 0 3px var(--accent-glow); }
+    .url-input::placeholder { color:var(--text-muted); }
+    select.q-select, .field-input { background:var(--bg-input); border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 12px; color:var(--text); font-size:13px; font-family:var(--sans); }
+    select.q-select:focus, .field-input:focus { outline:none; border-color:var(--border-focus); }
+    .field-input { width:100%; }
+    .field-input-mono { font-family:var(--mono); font-size:12px; }
 
-    /* ── Forms ── */
-    label {
-      display: block; font-size: 12px; font-weight: 500;
-      color: var(--text-secondary); margin-bottom: 6px;
-      text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .input-row { display: flex; gap: 8px; align-items: center; }
-    .url-input {
-      flex: 1; background: var(--bg-input); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 12px 14px;
-      color: var(--text); font-size: 14px; font-family: var(--sans); transition: border-color 0.2s;
-    }
-    .url-input:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-glow); }
-    .url-input::placeholder { color: var(--text-muted); }
-    select.q-select {
-      background: var(--bg-input); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 8px 12px;
-      color: var(--text); font-size: 13px; font-family: var(--sans);
-    }
-    select.q-select:focus { outline: none; border-color: var(--border-focus); }
+    /* Buttons */
+    .btn-primary { background:var(--accent); color:#fff; font-weight:600; font-size:14px; padding:12px 28px; border-radius:var(--radius-sm); border:none; cursor:pointer; transition:background 0.2s,transform 0.1s; white-space:nowrap; }
+    .btn-primary:hover { background:var(--accent-hover); }
+    .btn-primary:active { transform:scale(0.97); }
+    .btn-primary:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+    .btn-secondary { background:var(--bg-input); color:var(--text-secondary); font-weight:500; font-size:13px; padding:8px 16px; border-radius:var(--radius-sm); border:1px solid var(--border); cursor:pointer; transition:background 0.2s,color 0.2s; }
+    .btn-secondary:hover { background:var(--bg-card-hover); color:var(--text); }
+    .btn-structure { background:rgba(99,102,241,0.1); color:#818cf8; font-weight:600; font-size:13px; padding:8px 20px; border-radius:var(--radius-sm); border:1px solid rgba(99,102,241,0.3); cursor:pointer; transition:background 0.2s; }
+    .btn-structure:hover { background:rgba(99,102,241,0.2); }
+    .btn-structure:disabled { opacity:0.5; cursor:not-allowed; }
+    .btn-run { background:rgba(34,197,94,0.1); color:#22c55e; font-weight:600; font-size:12px; padding:6px 14px; border-radius:var(--radius-sm); border:1px solid rgba(34,197,94,0.3); cursor:pointer; transition:background 0.2s; }
+    .btn-run:hover { background:rgba(34,197,94,0.2); }
+    .btn-run:disabled { opacity:0.5; cursor:not-allowed; }
+    .btn-run-all { background:var(--accent); color:#fff; font-weight:600; font-size:13px; padding:8px 20px; border-radius:var(--radius-sm); border:none; cursor:pointer; transition:background 0.2s; }
+    .btn-run-all:hover { background:var(--accent-hover); }
+    .btn-run-all:disabled { opacity:0.5; cursor:not-allowed; }
+    .hint { font-size:12px; color:var(--text-muted); margin-top:8px; line-height:1.5; }
 
-    /* ── Buttons ── */
-    .btn-primary {
-      background: var(--accent); color: #fff; font-weight: 600; font-size: 14px;
-      padding: 12px 28px; border-radius: var(--radius-sm); border: none;
-      cursor: pointer; transition: background 0.2s, transform 0.1s; white-space: nowrap;
-    }
-    .btn-primary:hover { background: var(--accent-hover); }
-    .btn-primary:active { transform: scale(0.97); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    /* Badges */
+    .pdf-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:2px 8px; border-radius:20px; background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.2); }
+    .html-badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:2px 8px; border-radius:20px; background:rgba(59,130,246,0.1); color:#3b82f6; border:1px solid rgba(59,130,246,0.2); }
+    .status-badge { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600; padding:2px 10px; border-radius:20px; }
+    .status-badge.success { background:rgba(34,197,94,0.1); color:var(--success); }
+    .status-badge.error { background:rgba(239,68,68,0.1); color:var(--error); }
+    .status-badge.pending { background:rgba(234,179,8,0.1); color:#eab308; }
 
-    .btn-secondary {
-      background: var(--bg-input); color: var(--text-secondary); font-weight: 500;
-      font-size: 13px; padding: 8px 16px; border-radius: var(--radius-sm);
-      border: 1px solid var(--border); cursor: pointer; transition: background 0.2s, color 0.2s;
-    }
-    .btn-secondary:hover { background: var(--bg-card-hover); color: var(--text); }
+    /* Result */
+    .result-bar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+    .result-bar-left { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .result-meta { display:flex; gap:16px; font-size:12px; color:var(--text-muted); align-items:center; }
+    .result-meta .val { color:var(--text-secondary); font-weight:500; }
+    .meta-grid { display:grid; grid-template-columns:120px 1fr; gap:4px 12px; font-size:12px; padding:12px 14px; margin-bottom:12px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); }
+    .meta-key { color:var(--text-muted); }
+    .meta-val { color:var(--text-secondary); word-break:break-all; }
+    .result-content { background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; font-family:var(--mono); font-size:12px; line-height:1.6; color:var(--text-secondary); max-height:400px; overflow:auto; white-space:pre-wrap; word-break:break-word; }
+    .result-content::-webkit-scrollbar { width:6px; }
+    .result-content::-webkit-scrollbar-track { background:transparent; }
+    .result-content::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
 
-    .btn-structure {
-      background: rgba(99,102,241,0.1); color: #818cf8; font-weight: 600;
-      font-size: 13px; padding: 8px 20px; border-radius: var(--radius-sm);
-      border: 1px solid rgba(99,102,241,0.3); cursor: pointer; transition: background 0.2s;
-    }
-    .btn-structure:hover { background: rgba(99,102,241,0.2); }
-    .btn-structure:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* View toggle */
+    .view-tabs { display:flex; gap:0; margin-bottom:12px; }
+    .view-tab { padding:8px 16px; font-size:12px; font-weight:500; color:var(--text-muted); cursor:pointer; border:1px solid var(--border); background:var(--bg-input); transition:all 0.2s; }
+    .view-tab:first-child { border-radius:var(--radius-sm) 0 0 var(--radius-sm); }
+    .view-tab:last-child { border-radius:0 var(--radius-sm) var(--radius-sm) 0; border-left:none; }
+    .view-tab.active { background:var(--accent-glow); color:var(--accent); border-color:var(--accent); }
 
-    .btn-run {
-      background: rgba(34,197,94,0.1); color: #22c55e; font-weight: 600;
-      font-size: 12px; padding: 6px 14px; border-radius: var(--radius-sm);
-      border: 1px solid rgba(34,197,94,0.3); cursor: pointer; transition: background 0.2s;
-    }
-    .btn-run:hover { background: rgba(34,197,94,0.2); }
-    .btn-run:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* Table */
+    .table-container { overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg); max-height:600px; overflow-y:auto; }
+    .data-table { width:100%; border-collapse:collapse; font-size:12px; font-family:var(--mono); }
+    .data-table thead { position:sticky; top:0; z-index:2; }
+    .data-table th { text-align:left; padding:10px 12px; font-weight:600; font-size:11px; color:var(--accent); background:var(--bg-card); border-bottom:2px solid var(--accent); text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; }
+    .data-table td { padding:8px 12px; color:var(--text-secondary); border-bottom:1px solid rgba(39,39,42,0.5); white-space:nowrap; }
+    .data-table tbody tr:hover td { background:var(--bg-card-hover); }
+    .data-table tbody tr:nth-child(even) td { background:rgba(17,17,19,0.5); }
+    .data-table tbody tr:nth-child(even):hover td { background:var(--bg-card-hover); }
+    .table-name { font-size:13px; font-weight:600; color:var(--text); margin:16px 0 8px 0; padding-bottom:4px; border-bottom:1px solid var(--border); }
+    .table-name:first-child { margin-top:0; }
+    .table-stats { font-size:11px; color:var(--text-muted); margin-bottom:8px; }
 
-    .btn-run-all {
-      background: var(--accent); color: #fff; font-weight: 600;
-      font-size: 13px; padding: 8px 20px; border-radius: var(--radius-sm);
-      border: none; cursor: pointer; transition: background 0.2s;
-    }
-    .btn-run-all:hover { background: var(--accent-hover); }
-    .btn-run-all:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* Pension list */
+    .pension-list { display:flex; flex-direction:column; gap:6px; }
+    .pension-item { border:1px solid var(--border); border-radius:var(--radius-sm); overflow:hidden; transition:border-color 0.2s; }
+    .pension-item:hover { border-color:var(--text-muted); }
+    .pension-item.running { border-color:var(--accent); }
+    .pension-item.done { border-color:var(--success); }
+    .pension-item.err { border-color:var(--error); }
+    .pension-item-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; cursor:pointer; background:var(--bg); transition:background 0.2s; gap:12px; }
+    .pension-item-header:hover { background:var(--bg-card-hover); }
+    .pension-info { flex:1; min-width:0; }
+    .pension-name { font-size:13px; font-weight:600; color:var(--text); margin-bottom:2px; }
+    .pension-sub { font-size:11px; color:var(--text-muted); font-family:var(--mono); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .pension-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
 
-    .hint { font-size: 12px; color: var(--text-muted); margin-top: 8px; line-height: 1.5; }
+    /* Pension detail */
+    .pension-detail { display:none; border-top:1px solid var(--border); padding:16px; background:var(--bg-card); }
+    .pension-item.open .pension-detail { display:block; }
+    .pension-item.open .pension-item-header { background:var(--bg-card-hover); }
+    .detail-grid { display:grid; grid-template-columns:140px 1fr; gap:6px 12px; font-size:12px; margin-bottom:12px; }
+    .detail-label { color:var(--text-muted); font-weight:500; text-transform:uppercase; font-size:11px; letter-spacing:0.3px; }
+    .detail-value { color:var(--text-secondary); word-break:break-all; font-family:var(--mono); font-size:12px; }
+    .detail-value a { color:var(--accent); text-decoration:none; }
+    .detail-value a:hover { text-decoration:underline; }
+    .asset-urls { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+    .asset-url-row { display:flex; gap:8px; align-items:center; }
+    .asset-url-row .field-input { flex:1; font-size:11px; padding:6px 10px; font-family:var(--mono); }
+    .asset-url-row .label-sm { font-size:11px; color:var(--text-muted); min-width:100px; }
 
-    /* ── Badges ── */
-    .pdf-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
-      background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.2);
-    }
-    .html-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
-      background: rgba(59,130,246,0.1); color: #3b82f6; border: 1px solid rgba(59,130,246,0.2);
-    }
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 20px;
-    }
-    .status-badge.success { background: rgba(34,197,94,0.1); color: var(--success); }
-    .status-badge.error { background: rgba(239,68,68,0.1); color: var(--error); }
-    .status-badge.pending { background: rgba(234,179,8,0.1); color: #eab308; }
+    /* Summary */
+    .summary-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; }
+    .summary-stat { background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; text-align:center; }
+    .summary-stat .num { font-size:28px; font-weight:700; color:var(--accent); font-family:var(--mono); }
+    .summary-stat .lbl { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-top:4px; }
+    .summary-breakdown { margin-top:12px; }
+    .summary-row { display:flex; justify-content:space-between; padding:6px 0; font-size:12px; border-bottom:1px solid rgba(39,39,42,0.3); }
+    .summary-row:last-child { border-bottom:none; }
+    .summary-row .k { color:var(--text-muted); }
+    .summary-row .v { color:var(--text-secondary); font-weight:600; font-family:var(--mono); }
 
-    /* ── Result helpers ── */
-    .result-bar {
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
-    }
-    .result-bar-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .result-meta { display: flex; gap: 16px; font-size: 12px; color: var(--text-muted); align-items: center; }
-    .result-meta .val { color: var(--text-secondary); font-weight: 500; }
+    /* Pension result tabs */
+    .pension-result-tabs { display:flex; gap:0; overflow-x:auto; border-bottom:1px solid var(--border); }
+    .pension-result-tab { padding:8px 16px; font-size:12px; font-weight:500; color:var(--text-muted); cursor:pointer; border:none; background:none; border-bottom:2px solid transparent; white-space:nowrap; transition:all 0.2s; }
+    .pension-result-tab:hover { color:var(--text-secondary); }
+    .pension-result-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
 
-    .meta-grid {
-      display: grid; grid-template-columns: 120px 1fr; gap: 4px 12px;
-      font-size: 12px; padding: 12px 14px; margin-bottom: 12px;
-      background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
-    }
-    .meta-key { color: var(--text-muted); }
-    .meta-val { color: var(--text-secondary); word-break: break-all; }
+    .spinner { width:16px; height:16px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .loading-bar { height:2px; background:var(--border); position:relative; overflow:hidden; display:none; }
+    .loading-bar.active { display:block; }
+    .loading-bar::after { content:''; position:absolute; left:-40%; width:40%; height:100%; background:var(--accent); animation:loading 1s ease-in-out infinite; }
+    .loading-bar.structure::after { background:#818cf8; }
+    @keyframes loading { 0%{left:-40%} 100%{left:100%} }
 
-    .result-content {
-      background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 16px;
-      font-family: var(--mono); font-size: 12px; line-height: 1.6;
-      color: var(--text-secondary);
-      max-height: 400px; overflow: auto;
-      white-space: pre-wrap; word-break: break-word;
-    }
-    .result-content::-webkit-scrollbar { width: 6px; }
-    .result-content::-webkit-scrollbar-track { background: transparent; }
-    .result-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:80px 20px; color:var(--text-muted); text-align:center; }
+    .empty-icon { font-size:48px; margin-bottom:16px; opacity:0.3; }
+    .empty-state p { font-size:14px; max-width:300px; line-height:1.5; }
 
-    /* ── View toggle ── */
-    .view-tabs { display: flex; gap: 0; margin-bottom: 12px; }
-    .view-tab {
-      padding: 8px 16px; font-size: 12px; font-weight: 500;
-      color: var(--text-muted); cursor: pointer; border: 1px solid var(--border);
-      background: var(--bg-input); transition: all 0.2s;
-    }
-    .view-tab:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
-    .view-tab:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; border-left: none; }
-    .view-tab.active { background: var(--accent-glow); color: var(--accent); border-color: var(--accent); }
+    .hidden { display:none !important; }
+    .chevron { transition:transform 0.2s; color:var(--text-muted); font-size:10px; margin-left:4px; }
+    .pension-item.open .chevron { transform:rotate(180deg); }
 
-    /* ── Table ── */
-    .table-container {
-      overflow-x: auto; border: 1px solid var(--border);
-      border-radius: var(--radius-sm); background: var(--bg);
-      max-height: 600px; overflow-y: auto;
-    }
-    .data-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
-    .data-table thead { position: sticky; top: 0; z-index: 2; }
-    .data-table th {
-      text-align: left; padding: 10px 12px; font-weight: 600; font-size: 11px;
-      color: var(--accent); background: var(--bg-card);
-      border-bottom: 2px solid var(--accent);
-      text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
-    }
-    .data-table td {
-      padding: 8px 12px; color: var(--text-secondary);
-      border-bottom: 1px solid rgba(39,39,42,0.5); white-space: nowrap;
-    }
-    .data-table tbody tr:hover td { background: var(--bg-card-hover); }
-    .data-table tbody tr:nth-child(even) td { background: rgba(17,17,19,0.5); }
-    .data-table tbody tr:nth-child(even):hover td { background: var(--bg-card-hover); }
-
-    .table-name {
-      font-size: 13px; font-weight: 600; color: var(--text);
-      margin: 16px 0 8px 0; padding-bottom: 4px; border-bottom: 1px solid var(--border);
-    }
-    .table-name:first-child { margin-top: 0; }
-    .table-stats { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
-
-    /* ── Pension source list ── */
-    .pension-list { display: flex; flex-direction: column; gap: 8px; }
-    .pension-item {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 16px; background: var(--bg); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); transition: border-color 0.2s; gap: 12px;
-    }
-    .pension-item:hover { border-color: var(--text-muted); }
-    .pension-item.running { border-color: var(--accent); background: var(--accent-glow); }
-    .pension-item.done { border-color: var(--success); }
-    .pension-item.error { border-color: var(--error); }
-
-    .pension-info { flex: 1; min-width: 0; }
-    .pension-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
-    .pension-sub { font-size: 11px; color: var(--text-muted); font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .pension-status { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-
-    .spinner {
-      width: 16px; height: 16px; border: 2px solid var(--border);
-      border-top-color: var(--accent); border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .quarter-bar {
-      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    }
-    .quarter-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
-
-    /* ── Pension results ── */
-    .pension-results-header {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 8px; flex-wrap: wrap;
-    }
-    .pension-result-tabs { display: flex; gap: 0; overflow-x: auto; }
-    .pension-result-tab {
-      padding: 8px 16px; font-size: 12px; font-weight: 500;
-      color: var(--text-muted); cursor: pointer; border: none; background: none;
-      border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s;
-    }
-    .pension-result-tab:hover { color: var(--text-secondary); }
-    .pension-result-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-    /* ── Empty & loading ── */
-    .empty-state {
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; padding: 80px 20px;
-      color: var(--text-muted); text-align: center;
-    }
-    .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
-    .empty-state p { font-size: 14px; max-width: 300px; line-height: 1.5; }
-
-    .loading-bar {
-      height: 2px; background: var(--border);
-      position: relative; overflow: hidden; display: none;
-    }
-    .loading-bar.active { display: block; }
-    .loading-bar::after {
-      content: ''; position: absolute; left: -40%; width: 40%; height: 100%;
-      background: var(--accent); animation: loading 1s ease-in-out infinite;
-    }
-    @keyframes loading { 0% { left: -40%; } 100% { left: 100%; } }
-    .loading-bar.structure::after { background: #818cf8; }
-
-    .hidden { display: none !important; }
-
-    .toast {
-      position: fixed; bottom: 24px; right: 24px;
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius-sm); padding: 12px 20px;
-      font-size: 13px; color: var(--text-secondary); z-index: 100;
-      animation: fadeInUp 0.3s ease; max-width: 360px;
-    }
-    .toast.error { border-color: var(--error); color: var(--error); }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .toast { position:fixed; bottom:24px; right:24px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px 20px; font-size:13px; color:var(--text-secondary); z-index:100; animation:fadeInUp 0.3s ease; max-width:360px; }
+    .toast.error { border-color:var(--error); color:var(--error); }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
   <header class="header">
     <div class="header-left">
       <div class="logo"><span>SCRPR</span></div>
@@ -344,13 +201,12 @@
     </div>
   </header>
 
-  <!-- Nav -->
   <nav class="nav-tabs">
     <button class="nav-tab active" data-page="extract">Extract URL</button>
     <button class="nav-tab" data-page="pensions">Pensions</button>
   </nav>
 
-  <!-- ══════════════ PAGE: Extract ══════════════ -->
+  <!-- PAGE: Extract -->
   <div class="page active" id="page-extract">
     <div class="main">
       <div class="card">
@@ -360,7 +216,7 @@
             <input type="url" class="url-input" id="scrapeUrl" placeholder="https://example.com/report.pdf">
             <button class="btn-primary" id="scrapeBtn">Extract</button>
           </div>
-          <p class="hint">Paste any URL — PDFs are auto-detected. Use "Structure as Table" to parse into columns.</p>
+          <p class="hint">Paste any URL. Use "Structure as Table" to parse extracted text into columns via AI.</p>
         </div>
       </div>
       <div class="card" style="flex:1;display:flex;flex-direction:column;">
@@ -369,7 +225,7 @@
           <div id="resultActions" class="hidden" style="display:flex;gap:8px;align-items:center;">
             <button class="btn-structure" id="structureBtn">Structure as Table</button>
             <button class="btn-secondary" id="exportCsvBtn">Export CSV</button>
-            <button class="btn-secondary" onclick="copyResult()">Copy Raw</button>
+            <button class="btn-secondary" id="copyRawBtn">Copy Raw</button>
           </div>
         </div>
         <div class="loading-bar" id="loadingBar"></div>
@@ -384,14 +240,13 @@
     </div>
   </div>
 
-  <!-- ══════════════ PAGE: Pensions ══════════════ -->
+  <!-- PAGE: Pensions -->
   <div class="page" id="page-pensions">
     <div class="main">
-      <!-- Quarter selector + Run All -->
       <div class="card">
         <div class="card-body" style="padding:16px 20px;">
-          <div class="quarter-bar">
-            <span class="quarter-label">Reporting Quarter:</span>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <span style="font-size:13px;color:var(--text-secondary);font-weight:500;">Reporting Quarter:</span>
             <select class="q-select" id="quarterSelect"></select>
             <button class="btn-run-all" id="runAllBtn">Run All Sources</button>
             <span id="runAllStatus" style="font-size:12px;color:var(--text-muted);"></span>
@@ -399,26 +254,27 @@
         </div>
       </div>
 
-      <!-- Source list -->
+      <div class="card hidden" id="summaryCard">
+        <div class="card-header"><div class="card-title">Summary</div></div>
+        <div class="card-body" id="summaryBody"></div>
+      </div>
+
       <div class="card">
         <div class="card-header">
           <div class="card-title">Pension Fund Sources</div>
           <span style="font-size:12px;color:var(--text-muted);" id="sourceCount"></span>
         </div>
-        <div class="card-body">
+        <div class="card-body" style="padding:12px;">
           <div class="pension-list" id="pensionList"></div>
         </div>
       </div>
 
-      <!-- Pension results -->
       <div class="card hidden" id="pensionResultsCard" style="flex:1;display:flex;flex-direction:column;">
         <div class="card-header">
-          <div class="pension-results-header">
-            <div class="card-title">Extracted Data</div>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <button class="btn-secondary" id="pensionExportCsvBtn">Export CSV</button>
-              <button class="btn-secondary" id="pensionExportAllBtn">Export All CSVs</button>
-            </div>
+          <div class="card-title">Extracted Data</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn-secondary" id="pensionExportCsvBtn">Export CSV</button>
+            <button class="btn-secondary" id="pensionExportAllBtn">Export All CSVs</button>
           </div>
         </div>
         <div class="pension-result-tabs" id="pensionResultTabs"></div>
@@ -428,200 +284,154 @@
   </div>
 
   <script>
-    // ── Globals ──
+    // ── Helpers ──
     const $ = s => document.querySelector(s);
     const $$ = s => document.querySelectorAll(s);
+
+    // XSS-safe text escaping: creates a text node via the DOM
+    function esc(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+
     let rawContent = '', structuredData = null, currentView = 'raw';
 
-    // ── Pension fund sources with URL templates ──
-    // {Q} = quarter number (1-4), {YYYY} = year, {QName} = "Quarter_1", {FY} = fiscal year
+    // ── Pension fund configs ──
     const PENSION_SOURCES = [
       {
-        id: 'operf_pe',
-        name: 'Oregon OPERF — Private Equity',
-        system: 'Oregon State Treasury',
-        template: 'https://www.oregon.gov/treasury/invested-for-oregon/Documents/OPERF-Private-Equity-Portfolio-{QName}-{YYYY}.pdf',
-        hint: 'Private equity fund portfolio with vintage year, commitment, contributions, distributions, fair market value, total value multiple, IRR',
+        id: 'operf', name: 'Oregon OPERF', system: 'Oregon State Treasury',
+        website: 'https://www.oregon.gov/treasury/invested-for-oregon/pages/oregon-public-employees-retirement-fund.aspx',
+        assetClasses: [
+          { label: 'Private Equity', template: 'https://www.oregon.gov/treasury/invested-for-oregon/Documents/OPERF-Private-Equity-Portfolio-{QName}-{YYYY}.pdf', hint: 'Private equity fund portfolio with vintage year, partnership, commitment, contributions, distributed, fair market value, total value multiple, IRR' },
+          { label: 'Real Estate', template: 'https://www.oregon.gov/treasury/invested-for-oregon/Documents/OPERF-Real-Estate-Portfolio-{QName}-{YYYY}.pdf', hint: 'Real estate fund portfolio' },
+          { label: 'Alternative Equity', template: 'https://www.oregon.gov/treasury/invested-for-oregon/Documents/OPERF-Alternative-Equity-Portfolio-{QName}-{YYYY}.pdf', hint: 'Alternative equity fund portfolio' },
+          { label: 'Infrastructure', template: 'https://www.oregon.gov/treasury/invested-for-oregon/Documents/OPERF-Infrastructure-Portfolio-{QName}-{YYYY}.pdf', hint: 'Infrastructure fund portfolio' },
+          { label: 'Private Credit', template: 'https://www.oregon.gov/treasury/invested-for-oregon/Documents/OPERF-Private-Credit-Portfolio-{QName}-{YYYY}.pdf', hint: 'Private credit fund portfolio' },
+        ],
       },
       {
-        id: 'operf_re',
-        name: 'Oregon OPERF — Real Estate',
-        system: 'Oregon State Treasury',
-        template: 'https://www.oregon.gov/treasury/invested-for-oregon/Documents/OPERF-Real-Estate-Portfolio-{QName}-{YYYY}.pdf',
-        hint: 'Real estate fund portfolio with vintage year, commitment, contributions, distributions, market value, multiples',
+        id: 'lacera', name: 'LACERA', system: 'Los Angeles County Employees Retirement',
+        website: 'https://www.lacera.com',
+        assetClasses: [
+          { label: 'Private Equity', template: 'https://www.lacera.com/sites/default/files/assets/documents/general/PE-Report-Q{Q}-{YYYY}.pdf', hint: 'Private equity portfolio with fund name, vintage year, commitment, contributions, distributions, NAV, total value, DPI, TVPI, IRR' },
+        ],
       },
       {
-        id: 'operf_alts',
-        name: 'Oregon OPERF — Alternative Equity',
-        system: 'Oregon State Treasury',
-        template: 'https://www.oregon.gov/treasury/invested-for-oregon/Documents/OPERF-Alternative-Equity-Portfolio-{QName}-{YYYY}.pdf',
-        hint: 'Alternative equity portfolio with fund names, vintage year, commitment, contributions, distributions, market value',
+        id: 'texas_trs', name: 'Texas TRS', system: 'Texas Teacher Retirement System',
+        website: 'https://www.trs.texas.gov',
+        assetClasses: [
+          { label: 'Private Equity', template: 'https://www.trs.texas.gov/TRS%20Documents/investment-private-equity-portfolio-q{Q}-{YYYY}.pdf', hint: 'Private equity portfolio with partnership name, vintage year, commitment, paid-in capital, distributions, market value, total value, net IRR' },
+        ],
       },
       {
-        id: 'operf_infra',
-        name: 'Oregon OPERF — Infrastructure',
-        system: 'Oregon State Treasury',
-        template: 'https://www.oregon.gov/treasury/invested-for-oregon/Documents/OPERF-Infrastructure-Portfolio-{QName}-{YYYY}.pdf',
-        hint: 'Infrastructure fund portfolio',
+        id: 'wsib', name: 'Washington WSIB', system: 'Washington State Investment Board',
+        website: 'https://www.sib.wa.gov',
+        assetClasses: [
+          { label: 'Private Equity', template: 'https://www.sib.wa.gov/financial-data/portfolio-holdings/private-equity/PE_Holdings_Q{Q}{YYYY}.pdf', hint: 'Private equity holdings with fund name, vintage year, commitment, paid-in capital, distributions, reported value, total value, IRR' },
+        ],
       },
       {
-        id: 'operf_pc',
-        name: 'Oregon OPERF — Private Credit',
-        system: 'Oregon State Treasury',
-        template: 'https://www.oregon.gov/treasury/invested-for-oregon/Documents/OPERF-Private-Credit-Portfolio-{QName}-{YYYY}.pdf',
-        hint: 'Private credit fund portfolio',
+        id: 'sba_fl', name: 'Florida SBA', system: 'Florida State Board of Administration',
+        website: 'https://www.sbafla.com',
+        assetClasses: [
+          { label: 'Private Equity', template: 'https://www.sbafla.com/fsb/Portals/FSB/Content/Performance/Quarterly/PrivateEquity_Q{Q}_{YYYY}.pdf', hint: 'Private equity portfolio report' },
+        ],
       },
       {
-        id: 'lacera_pe',
-        name: 'LACERA — Private Equity',
-        system: 'Los Angeles County (LACERA)',
-        template: 'https://www.lacera.com/sites/default/files/assets/documents/general/PE-Report-Q{Q}-{YYYY}.pdf',
-        hint: 'Private equity portfolio with fund name, vintage year, commitment, contributions, distributions, NAV, total value, DPI, TVPI, IRR',
-      },
-      {
-        id: 'texas_trs_pe',
-        name: 'Texas TRS — Private Equity',
-        system: 'Texas Teacher Retirement System',
-        template: 'https://www.trs.texas.gov/TRS%20Documents/investment-private-equity-portfolio-q{Q}-{YYYY}.pdf',
-        hint: 'Private equity portfolio with partnership name, vintage year, commitment, paid-in capital, distributions, market value, total value, net IRR',
-      },
-      {
-        id: 'wsib_pe',
-        name: 'Washington WSIB — Private Equity',
-        system: 'Washington State Investment Board',
-        template: 'https://www.sib.wa.gov/financial-data/portfolio-holdings/private-equity/PE_Holdings_Q{Q}{YYYY}.pdf',
-        hint: 'Private equity holdings with fund name, vintage year, commitment, paid-in capital, distributions, reported value, total value, IRR',
-      },
-      {
-        id: 'sba_fl_pe',
-        name: 'Florida SBA — Private Equity',
-        system: 'Florida State Board of Administration',
-        template: 'https://www.sbafla.com/fsb/Portals/FSB/Content/Performance/Quarterly/PrivateEquity_Q{Q}_{YYYY}.pdf',
-        hint: 'Private equity portfolio report',
-      },
-      {
-        id: 'calpers_pe',
-        name: 'CalPERS — Private Equity',
-        system: 'California Public Employees (CalPERS)',
-        template: 'https://www.calpers.ca.gov/docs/board-agendas/private-equity-program-review-q{Q}-{YYYY}.pdf',
-        hint: 'Private equity portfolio with fund name, vintage year, commitment, contributions, distributions, NAV, net IRR, TVPI, DPI',
-      },
-      {
-        id: 'nj_doi_pe',
-        name: 'New Jersey DOI — Private Equity',
-        system: 'New Jersey Division of Investment',
-        template: 'https://www.nj.gov/treasury/doinvest/pdf/private-equity/PE_Portfolio_Q{Q}_{YYYY}.pdf',
-        hint: 'Private equity alternative investments portfolio',
-      },
-      {
-        id: 'mpers_pe',
-        name: 'Mississippi PERS — Private Equity',
-        system: 'Mississippi Public Employees',
-        template: 'https://www.pers.ms.gov/investments/private-equity-Q{Q}-{YYYY}.pdf',
-        hint: 'Private equity fund portfolio',
+        id: 'calpers', name: 'CalPERS', system: 'California Public Employees Retirement',
+        website: 'https://www.calpers.ca.gov',
+        assetClasses: [
+          { label: 'Private Equity', template: 'https://www.calpers.ca.gov/docs/board-agendas/private-equity-program-review-q{Q}-{YYYY}.pdf', hint: 'Private equity portfolio with fund name, vintage year, commitment, contributions, distributions, NAV, net IRR, TVPI, DPI' },
+        ],
       },
     ];
 
+    // Persisted URL overrides + last run timestamps
+    const pensionOverrides = JSON.parse(localStorage.getItem('pension_overrides') || '{}');
+    const pensionState = {};
+    let activePensionTab = null;
+
+    function savePensionOverrides() { localStorage.setItem('pension_overrides', JSON.stringify(pensionOverrides)); }
+
     // ── Quarter helpers ──
     function getCurrentQuarter() {
-      const now = new Date();
-      const m = now.getMonth(); // 0-11
-      // Most recent completed quarter
-      if (m < 3) return { q: 4, year: now.getFullYear() - 1 };
-      if (m < 6) return { q: 1, year: now.getFullYear() };
-      if (m < 9) return { q: 2, year: now.getFullYear() };
-      return { q: 3, year: now.getFullYear() };
+      const now = new Date(), m = now.getMonth();
+      if (m < 3) return { q:4, year:now.getFullYear()-1 };
+      if (m < 6) return { q:1, year:now.getFullYear() };
+      if (m < 9) return { q:2, year:now.getFullYear() };
+      return { q:3, year:now.getFullYear() };
     }
-
     function getQuarterOptions() {
-      const opts = [];
-      const now = new Date();
-      const curYear = now.getFullYear();
-      // Generate last 8 quarters
-      let y = curYear, q = Math.ceil((now.getMonth() + 1) / 3);
-      for (let i = 0; i < 8; i++) {
-        q--;
-        if (q === 0) { q = 4; y--; }
-        opts.push({ q, year: y, label: `Q${q} ${y}` });
-      }
+      const opts = []; const now = new Date();
+      let y = now.getFullYear(), q = Math.ceil((now.getMonth()+1)/3);
+      for (let i = 0; i < 8; i++) { q--; if (q===0){q=4;y--;} opts.push({q,year:y,label:'Q'+q+' '+y}); }
       return opts;
     }
-
     function buildUrl(template, q, year) {
-      const qName = `Quarter_${q}`;
-      return template
-        .replace(/{Q}/g, String(q))
-        .replace(/{YYYY}/g, String(year))
-        .replace(/{QName}/g, qName)
-        .replace(/{FY}/g, String(q >= 3 ? year + 1 : year));
+      return template.replace(/{Q}/g, String(q)).replace(/{YYYY}/g, String(year)).replace(/{QName}/g, 'Quarter_'+q);
     }
-
-    // ── Init quarter selector ──
     function initQuarters() {
-      const sel = $('#quarterSelect');
-      const cur = getCurrentQuarter();
-      const opts = getQuarterOptions();
-      sel.innerHTML = opts.map((o, i) =>
-        `<option value="${o.q}-${o.year}" ${o.q === cur.q && o.year === cur.year ? 'selected' : ''}>${o.label}</option>`
-      ).join('');
+      const sel=$('#quarterSelect'), cur=getCurrentQuarter(), opts=getQuarterOptions();
+      sel.textContent = '';
+      opts.forEach(function(o){
+        const opt = document.createElement('option');
+        opt.value = o.q+'-'+o.year;
+        opt.textContent = o.label;
+        if (o.q===cur.q && o.year===cur.year) opt.selected = true;
+        sel.appendChild(opt);
+      });
       sel.addEventListener('change', renderPensionList);
     }
-
-    function getSelectedQuarter() {
-      const [q, year] = $('#quarterSelect').value.split('-').map(Number);
-      return { q, year };
-    }
+    function getSelectedQuarter() { var p=$('#quarterSelect').value.split('-'); return {q:+p[0],year:+p[1]}; }
 
     // ── Token ──
     function getToken() { return $('#tokenInput').value.trim(); }
-    const saved = sessionStorage.getItem('scraper_token');
-    if (saved) { $('#tokenInput').value = saved; $('#authStatus').classList.add('ok'); $('#authStatus').title = 'Token set'; }
-    $('#tokenInput').addEventListener('input', () => {
-      const t = getToken();
-      sessionStorage.setItem('scraper_token', t);
-      $('#authStatus').classList.toggle('ok', t.length > 0);
-      $('#authStatus').title = t ? 'Token set' : 'Not authenticated';
+    (function(){
+      var saved = sessionStorage.getItem('scraper_token');
+      if (saved) { $('#tokenInput').value = saved; $('#authStatus').classList.add('ok'); }
+    })();
+    $('#tokenInput').addEventListener('input', function(){
+      var t=getToken(); sessionStorage.setItem('scraper_token',t);
+      $('#authStatus').classList.toggle('ok',t.length>0);
     });
 
-    // ── Nav tabs ──
-    $$('.nav-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        $$('.nav-tab').forEach(t => t.classList.remove('active'));
-        $$('.page').forEach(p => p.classList.remove('active'));
+    // ── Nav ──
+    $$('.nav-tab').forEach(function(tab){
+      tab.addEventListener('click', function(){
+        $$('.nav-tab').forEach(function(t){t.classList.remove('active');});
+        $$('.page').forEach(function(p){p.classList.remove('active');});
         tab.classList.add('active');
-        $(`#page-${tab.dataset.page}`).classList.add('active');
+        document.getElementById('page-'+tab.dataset.page).classList.add('active');
       });
     });
 
-    // ════════════════ EXTRACT PAGE ════════════════
+    // ══════ EXTRACT PAGE ══════
 
     $('#scrapeBtn').addEventListener('click', extractUrl);
-    $('#scrapeUrl').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); extractUrl(); } });
-    document.addEventListener('keydown', e => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); extractUrl(); }
-    });
+    $('#scrapeUrl').addEventListener('keydown', function(e){ if(e.key==='Enter'){e.preventDefault();extractUrl();} });
+    document.addEventListener('keydown', function(e){ if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();extractUrl();} });
 
     async function extractUrl() {
-      const url = $('#scrapeUrl').value.trim();
-      if (!url) { showToast('Enter a URL', true); return; }
-      const token = getToken();
-      if (!token) { showToast('Enter your admin token first', true); return; }
+      var url=$('#scrapeUrl').value.trim();
+      if (!url) { showToast('Enter a URL',true); return; }
+      var token=getToken();
+      if (!token) { showToast('Enter your admin token first',true); return; }
       showLoading(true); resetExtract();
       try {
-        const resp = await fetch('/api/scrape?action=scrape', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
-          body: JSON.stringify({ url, format: 'markdown', include_metadata: true, stealth: true }),
+        var resp = await fetch('/api/scrape?action=scrape', {
+          method:'POST', headers:{'Content-Type':'application/json','X-Admin-Token':token},
+          body: JSON.stringify({url:url,format:'markdown',include_metadata:true,stealth:true}),
         });
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
+        var data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'HTTP '+resp.status);
         if (data.success) renderExtractResult(data.data);
-      } catch (e) { showToast(e.message, true); }
+      } catch(e) { showToast(e.message,true); }
       finally { showLoading(false); }
     }
 
     function resetExtract() {
-      rawContent = ''; structuredData = null; currentView = 'raw';
+      rawContent=''; structuredData=null; currentView='raw';
       $('#emptyState').classList.add('hidden');
       $('#resultContent').classList.add('hidden');
       $('#resultActions').classList.add('hidden');
@@ -629,300 +439,463 @@
 
     function renderExtractResult(d) {
       rawContent = d.content || '';
-      const el = $('#resultContent');
+      var el = $('#resultContent');
       el.classList.remove('hidden');
       $('#resultActions').classList.remove('hidden');
       $('#resultActions').style.display = 'flex';
-      const isPdf = d.format === 'pdf';
-      const statusClass = d.status >= 200 && d.status < 400 ? 'success' : 'error';
-      const typeBadge = isPdf ? `<span class="pdf-badge">PDF &middot; ${d.page_count || '?'} pages</span>` : `<span class="html-badge">HTML</span>`;
-      let metaHtml = '';
+
+      var statusClass = (d.status >= 200 && d.status < 400) ? 'success' : 'error';
+      var isPdf = (d.format === 'pdf');
+      var typeBadge = isPdf
+        ? '<span class="pdf-badge">PDF &middot; '+ esc(String(d.page_count||'?')) +' pages</span>'
+        : '<span class="html-badge">HTML</span>';
+
+      var metaHtml = '';
       if (d.metadata) {
-        const entries = Object.entries(d.metadata).filter(([k, v]) => v && k !== 'url');
+        var entries = Object.entries(d.metadata).filter(function(kv){ return kv[1] && kv[0]!=='url'; });
         if (entries.length) {
-          metaHtml = `<div class="meta-grid">${entries.map(([k, v]) => `<span class="meta-key">${esc(k)}</span><span class="meta-val">${esc(String(v))}</span>`).join('')}</div>`;
+          metaHtml = '<div class="meta-grid">' + entries.map(function(kv){
+            return '<span class="meta-key">'+esc(kv[0])+'</span><span class="meta-val">'+esc(String(kv[1]))+'</span>';
+          }).join('') + '</div>';
         }
       }
-      el.innerHTML = `
-        <div class="result-bar">
-          <div class="result-bar-left">
-            <span class="status-badge ${statusClass}">${d.status}</span>
-            ${typeBadge}
-            <span style="font-size:13px;font-weight:500;">${esc(d.title || 'Untitled')}</span>
-          </div>
-          <div class="result-meta">
-            <span>${(d.word_count || 0).toLocaleString()} <span class="val">words</span></span>
-            <span>${d.elapsed_ms} <span class="val">ms</span></span>
-          </div>
-        </div>
-        ${metaHtml}
-        <div id="viewContainer"></div>`;
+
+      // Build safely: all dynamic values go through esc()
+      el.textContent = '';
+      el.insertAdjacentHTML('beforeend',
+        '<div class="result-bar"><div class="result-bar-left">'
+        + '<span class="status-badge '+statusClass+'">'+esc(String(d.status))+'</span>'
+        + typeBadge
+        + '<span style="font-size:13px;font-weight:500;">'+esc(d.title||'Untitled')+'</span>'
+        + '</div><div class="result-meta">'
+        + '<span>'+esc(String((d.word_count||0).toLocaleString()))+' <span class="val">words</span></span>'
+        + '<span>'+esc(String(d.elapsed_ms))+' <span class="val">ms</span></span>'
+        + '</div></div>'
+        + metaHtml
+        + '<div id="viewContainer"></div>'
+      );
       renderExtractView();
     }
 
     function renderExtractView() {
-      const c = document.getElementById('viewContainer');
+      var c = document.getElementById('viewContainer');
       if (!c) return;
+      c.textContent = '';
+
       if (currentView === 'table' && structuredData && structuredData.length) {
-        let h = `<div class="view-tabs"><div class="view-tab ${currentView==='raw'?'active':''}" onclick="switchExtractView('raw')">Raw Text</div><div class="view-tab ${currentView==='table'?'active':''}" onclick="switchExtractView('table')">Table</div></div>`;
-        for (const t of structuredData) {
-          h += `<div class="table-name">${esc(t.name||'Extracted Data')}</div><div class="table-stats">${t.rows.length} rows &middot; ${t.columns.length} columns</div>`;
-          h += `<div class="table-container"><table class="data-table"><thead><tr>${t.columns.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>`;
-          for (const r of t.rows) h += `<tr>${r.map(v=>`<td>${esc(String(v??''))}</td>`).join('')}</tr>`;
-          h += `</tbody></table></div>`;
-        }
-        c.innerHTML = h;
+        c.insertAdjacentHTML('beforeend', buildViewTabs());
+        structuredData.forEach(function(t) { c.insertAdjacentHTML('beforeend', buildTableHtml(t)); });
       } else {
-        let h = '';
-        if (structuredData) h += `<div class="view-tabs"><div class="view-tab ${currentView==='raw'?'active':''}" onclick="switchExtractView('raw')">Raw Text</div><div class="view-tab ${currentView==='table'?'active':''}" onclick="switchExtractView('table')">Table</div></div>`;
-        h += `<div class="result-content" id="resultText">${esc(rawContent)}</div>`;
-        c.innerHTML = h;
+        if (structuredData) c.insertAdjacentHTML('beforeend', buildViewTabs());
+        var pre = document.createElement('div');
+        pre.className = 'result-content';
+        pre.id = 'resultText';
+        pre.textContent = rawContent;
+        c.appendChild(pre);
       }
     }
-    window.switchExtractView = v => { currentView = v; renderExtractView(); };
+
+    function buildViewTabs() {
+      return '<div class="view-tabs">'
+        + '<div class="view-tab '+(currentView==='raw'?'active':'')+'" onclick="switchView(\'raw\')">Raw Text</div>'
+        + '<div class="view-tab '+(currentView==='table'?'active':'')+'" onclick="switchView(\'table\')">Table</div>'
+        + '</div>';
+    }
+    window.switchView = function(v) { currentView = v; renderExtractView(); };
 
     // Structure button
-    $('#structureBtn').addEventListener('click', async () => {
-      if (!rawContent) { showToast('Extract content first', true); return; }
-      const token = getToken();
-      if (!token) { showToast('Enter token', true); return; }
-      const bar = $('#loadingBar');
-      bar.classList.add('active', 'structure');
-      $('#structureBtn').disabled = true; $('#structureBtn').textContent = 'Structuring…';
+    $('#structureBtn').addEventListener('click', async function(){
+      if (!rawContent) { showToast('Extract content first',true); return; }
+      var token = getToken();
+      if (!token) { showToast('Enter token',true); return; }
+      var bar = $('#loadingBar');
+      bar.classList.add('active','structure');
+      $('#structureBtn').disabled = true;
+      $('#structureBtn').textContent = 'Structuring...';
       try {
-        const resp = await fetch('/api/scrape?action=structure', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
-          body: JSON.stringify({ content: rawContent }),
+        var resp = await fetch('/api/scrape?action=structure', {
+          method:'POST', headers:{'Content-Type':'application/json','X-Admin-Token':token},
+          body: JSON.stringify({content:rawContent}),
         });
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.error || `HTTP ${resp.status}`);
-        if (data.success) { structuredData = data.data.tables; currentView = 'table'; renderExtractView(); showToast(`Structured ${structuredData.length} table(s) in ${data.data.elapsed_ms}ms`); }
-      } catch (e) { showToast(e.message, true); }
-      finally { bar.classList.remove('active', 'structure'); $('#structureBtn').disabled = false; $('#structureBtn').textContent = 'Structure as Table'; }
+        var data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'HTTP '+resp.status);
+        if (data.success) {
+          structuredData = data.data.tables;
+          currentView = 'table';
+          renderExtractView();
+          showToast('Structured '+structuredData.length+' table(s) in '+data.data.elapsed_ms+'ms');
+        }
+      } catch(e) { showToast(e.message,true); }
+      finally {
+        bar.classList.remove('active','structure');
+        $('#structureBtn').disabled = false;
+        $('#structureBtn').textContent = 'Structure as Table';
+      }
     });
 
-    // Export CSV (extract page)
-    $('#exportCsvBtn').addEventListener('click', () => exportCsvFromTables(structuredData));
+    $('#exportCsvBtn').addEventListener('click', function(){ exportCsvFromTables(structuredData); });
+    $('#copyRawBtn').addEventListener('click', function(){
+      if (rawContent) navigator.clipboard.writeText(rawContent).then(function(){ showToast('Copied to clipboard'); });
+    });
 
-    function copyResult() {
-      if (rawContent) navigator.clipboard.writeText(rawContent).then(() => showToast('Copied to clipboard'));
+    // ══════ PENSIONS PAGE ══════
+
+    function getAssetKey(srcId, label) { return srcId + '__' + label.replace(/\s+/g,'_').toLowerCase(); }
+
+    function getEffectiveUrl(srcId, ac, q, year) {
+      var key = getAssetKey(srcId, ac.label);
+      var override = pensionOverrides[key] && pensionOverrides[key].url;
+      return buildUrl(override || ac.template, q, year);
     }
-
-    // ════════════════ PENSIONS PAGE ════════════════
-
-    const pensionState = {}; // id -> { status, rawContent, tables, error }
-    let activePensionTab = null;
 
     function renderPensionList() {
-      const { q, year } = getSelectedQuarter();
-      const el = $('#pensionList');
-      $('#sourceCount').textContent = `${PENSION_SOURCES.length} sources`;
+      var qInfo = getSelectedQuarter(), q = qInfo.q, year = qInfo.year;
+      var el = $('#pensionList');
+      var totalAC = PENSION_SOURCES.reduce(function(n,s){ return n+s.assetClasses.length; }, 0);
+      $('#sourceCount').textContent = PENSION_SOURCES.length + ' systems, ' + totalAC + ' asset classes';
 
-      el.innerHTML = PENSION_SOURCES.map(src => {
-        const url = buildUrl(src.template, q, year);
-        const s = pensionState[src.id] || {};
-        const cls = s.status === 'running' ? 'running' : s.status === 'done' ? 'done' : s.status === 'error' ? 'error' : '';
-        const statusHtml = s.status === 'running' ? '<div class="spinner"></div>'
-          : s.status === 'done' ? '<span class="status-badge success">Done</span>'
-          : s.status === 'error' ? `<span class="status-badge error" title="${esc(s.error||'')}">Error</span>`
-          : '';
-        return `<div class="pension-item ${cls}" id="pension-${src.id}">
-          <div class="pension-info">
-            <div class="pension-name">${esc(src.name)}</div>
-            <div class="pension-sub">${esc(src.system)} &middot; Q${q} ${year}</div>
-          </div>
-          <div class="pension-status">
-            ${statusHtml}
-            <button class="btn-run" onclick="runPension('${src.id}')" ${s.status==='running'?'disabled':''}>
-              ${s.status === 'done' ? 'Re-run' : 'Run'}
-            </button>
-            ${s.status === 'done' ? `<button class="btn-secondary" onclick="viewPension('${src.id}')" style="font-size:11px;padding:6px 12px;">View</button>` : ''}
-          </div>
-        </div>`;
-      }).join('');
-    }
+      el.textContent = '';
+      PENSION_SOURCES.forEach(function(src) {
+        var totalAssets = src.assetClasses.length;
+        var doneCount = src.assetClasses.filter(function(ac){ var s=pensionState[getAssetKey(src.id,ac.label)]; return s&&s.status==='done'; }).length;
+        var hasError = src.assetClasses.some(function(ac){ var s=pensionState[getAssetKey(src.id,ac.label)]; return s&&s.status==='error'; });
+        var isRunning = src.assetClasses.some(function(ac){ var s=pensionState[getAssetKey(src.id,ac.label)]; return s&&s.status==='running'; });
+        var cls = isRunning ? 'running' : (doneCount===totalAssets&&doneCount>0) ? 'done' : hasError ? 'err' : '';
+        var lastRun = pensionOverrides[src.id] && pensionOverrides[src.id].lastRun;
 
-    // Run a single pension source
-    window.runPension = async (id) => {
-      const token = getToken();
-      if (!token) { showToast('Enter your admin token first', true); return; }
-      const src = PENSION_SOURCES.find(s => s.id === id);
-      if (!src) return;
-      const { q, year } = getSelectedQuarter();
-      const url = buildUrl(src.template, q, year);
+        var itemDiv = document.createElement('div');
+        itemDiv.className = 'pension-item ' + cls;
+        itemDiv.id = 'pension-' + src.id;
 
-      pensionState[id] = { status: 'running', rawContent: '', tables: null, error: null };
-      renderPensionList();
+        // Build asset class rows HTML
+        var acRowsHtml = src.assetClasses.map(function(ac) {
+          var key = getAssetKey(src.id, ac.label);
+          var s = pensionState[key] || {};
+          var statusIcon = '';
+          if (s.status==='done') statusIcon='<span class="status-badge success" style="font-size:10px;padding:1px 6px;">Done</span>';
+          else if (s.status==='error') statusIcon='<span class="status-badge error" style="font-size:10px;padding:1px 6px;">Err</span>';
+          else if (s.status==='running') statusIcon='<div class="spinner" style="width:12px;height:12px;border-width:1.5px;"></div>';
 
-      try {
-        // Step 1: Extract
-        const resp1 = await fetch('/api/scrape?action=scrape', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
-          body: JSON.stringify({ url, format: 'markdown', include_metadata: true, stealth: true }),
-        });
-        const data1 = await resp1.json();
-        if (!resp1.ok) throw new Error(data1.error || `Extract failed: HTTP ${resp1.status}`);
+          return '<div class="asset-url-row">'
+            + '<span class="label-sm">'+esc(ac.label)+'</span>'
+            + '<input class="field-input field-input-mono" value="'+esc(ac.template)+'" data-src="'+esc(src.id)+'" data-label="'+esc(ac.label)+'" title="URL template: use {Q}, {YYYY}, {QName}">'
+            + statusIcon
+            + '<button class="btn-run" data-action="run-asset" data-src="'+esc(src.id)+'" data-label="'+esc(ac.label)+'" style="font-size:10px;padding:4px 10px;"'+(s.status==='running'?' disabled':'')+'>Run</button>'
+            + (s.status==='done' ? '<button class="btn-secondary" data-action="view-asset" data-key="'+esc(key)+'" style="font-size:10px;padding:4px 10px;">View</button>' : '')
+            + '</div>';
+        }).join('');
 
-        const content = data1.data?.content || '';
-        if (!content || content.length < 50) throw new Error('No content extracted from PDF');
-
-        // Step 2: Structure
-        const resp2 = await fetch('/api/scrape?action=structure', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Admin-Token': token },
-          body: JSON.stringify({ content, hint: src.hint || '' }),
-        });
-        const data2 = await resp2.json();
-        if (!resp2.ok) throw new Error(data2.error || `Structure failed: HTTP ${resp2.status}`);
-
-        pensionState[id] = {
-          status: 'done',
-          rawContent: content,
-          tables: data2.data?.tables || [],
-          error: null,
-          title: data1.data?.title || src.name,
-          pageCount: data1.data?.page_count,
-          wordCount: data1.data?.word_count,
-        };
-        renderPensionList();
-        viewPension(id);
-        showToast(`${src.name}: ${pensionState[id].tables.length} table(s) extracted`);
-      } catch (e) {
-        pensionState[id] = { status: 'error', rawContent: '', tables: null, error: e.message };
-        renderPensionList();
-        showToast(`${src.name}: ${e.message}`, true);
-      }
-    };
-
-    // Run all sources sequentially
-    $('#runAllBtn').addEventListener('click', async () => {
-      const token = getToken();
-      if (!token) { showToast('Enter your admin token first', true); return; }
-      $('#runAllBtn').disabled = true;
-      const total = PENSION_SOURCES.length;
-      let done = 0, errors = 0;
-      for (const src of PENSION_SOURCES) {
-        $('#runAllStatus').textContent = `Running ${done + 1} of ${total}...`;
-        await window.runPension(src.id);
-        if (pensionState[src.id]?.status === 'error') errors++;
-        done++;
-      }
-      $('#runAllBtn').disabled = false;
-      $('#runAllStatus').textContent = `Complete: ${done - errors} succeeded, ${errors} failed`;
-    });
-
-    // View pension result
-    window.viewPension = (id) => {
-      activePensionTab = id;
-      const card = $('#pensionResultsCard');
-      card.classList.remove('hidden');
-
-      // Render tabs for all completed sources
-      const completedIds = PENSION_SOURCES.filter(s => pensionState[s.id]?.status === 'done').map(s => s.id);
-      const tabs = $('#pensionResultTabs');
-      tabs.innerHTML = completedIds.map(sid => {
-        const src = PENSION_SOURCES.find(s => s.id === sid);
-        return `<button class="pension-result-tab ${sid === id ? 'active' : ''}" onclick="viewPension('${sid}')">${esc(src.name.split('—').pop().trim())}</button>`;
-      }).join('');
-
-      renderPensionResult(id);
-    };
-
-    function renderPensionResult(id) {
-      const s = pensionState[id];
-      const body = $('#pensionResultBody');
-      if (!s || !s.tables || !s.tables.length) {
-        body.innerHTML = '<div class="empty-state"><p>No table data extracted</p></div>';
-        return;
-      }
-      let h = '';
-      for (const t of s.tables) {
-        const name = t.name || 'Extracted Data';
-        const cols = t.columns || [];
-        const rows = t.rows || [];
-        h += `<div class="table-name">${esc(name)}</div>`;
-        h += `<div class="table-stats">${rows.length} rows &middot; ${cols.length} columns</div>`;
-        h += `<div class="table-container"><table class="data-table"><thead><tr>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>`;
-        for (const r of rows) h += `<tr>${r.map(v => `<td>${esc(String(v ?? ''))}</td>`).join('')}</tr>`;
-        h += `</tbody></table></div>`;
-      }
-      body.innerHTML = h;
-    }
-
-    // Export CSV helpers
-    function tableToCsv(table) {
-      const rows = [table.columns.join(',')];
-      for (const row of table.rows) {
-        rows.push(row.map(cell => {
-          const s = String(cell ?? '');
-          return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s;
-        }).join(','));
-      }
-      return rows.join('\n');
-    }
-
-    function downloadCsv(content, filename) {
-      const blob = new Blob([content], { type: 'text/csv' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(a.href);
-    }
-
-    function exportCsvFromTables(tables) {
-      if (!tables || !tables.length) return;
-      tables.forEach((t, i) => {
-        downloadCsv(tableToCsv(t), (t.name || `table_${i + 1}`).replace(/[^a-zA-Z0-9_-]/g, '_') + '.csv');
+        itemDiv.insertAdjacentHTML('beforeend',
+          '<div class="pension-item-header" data-toggle="'+esc(src.id)+'">'
+          + '<div class="pension-info">'
+          + '<div class="pension-name">'+esc(src.name)+' <span style="font-size:11px;color:var(--text-muted);font-weight:400;">('+totalAssets+' asset class'+(totalAssets>1?'es':'')+')</span></div>'
+          + '<div class="pension-sub">'+esc(src.system)+' &middot; Q'+q+' '+year+(doneCount>0 ? ' &middot; '+doneCount+'/'+totalAssets+' extracted' : '')+'</div>'
+          + '</div>'
+          + '<div class="pension-actions">'
+          + (isRunning ? '<div class="spinner"></div>' : '')
+          + (doneCount>0 ? '<span class="status-badge success">'+doneCount+'/'+totalAssets+'</span>' : '')
+          + (hasError ? '<span class="status-badge error">Error</span>' : '')
+          + '<button class="btn-run" data-action="run-all-src" data-src="'+esc(src.id)+'"'+(isRunning?' disabled':'')+'>Run All</button>'
+          + '<span class="chevron">&#9660;</span>'
+          + '</div></div>'
+          + '<div class="pension-detail">'
+          + '<div class="detail-grid">'
+          + '<span class="detail-label">Website</span><span class="detail-value"><a href="'+esc(src.website)+'" target="_blank" rel="noopener">'+esc(src.website)+'</a></span>'
+          + '<span class="detail-label">Last Updated</span><span class="detail-value">'+(lastRun ? new Date(lastRun).toLocaleString() : 'Never')+'</span>'
+          + '<span class="detail-label">Asset Classes</span><span class="detail-value">'+totalAssets+'</span>'
+          + '</div>'
+          + '<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;">Asset Class URLs</div>'
+          + '<div class="asset-urls">' + acRowsHtml + '</div>'
+          + '</div>'
+        );
+        el.appendChild(itemDiv);
       });
     }
 
-    // Export active pension CSV
-    $('#pensionExportCsvBtn').addEventListener('click', () => {
-      if (activePensionTab && pensionState[activePensionTab]?.tables) {
+    // Event delegation for pension list
+    document.getElementById('pensionList').addEventListener('click', function(e) {
+      var btn = e.target.closest('[data-action]');
+      if (btn) {
+        e.stopPropagation();
+        var action = btn.dataset.action;
+        if (action === 'run-asset') runPensionAsset(btn.dataset.src, btn.dataset.label);
+        else if (action === 'view-asset') viewPensionAsset(btn.dataset.key);
+        else if (action === 'run-all-src') runPensionAll(btn.dataset.src);
+        return;
+      }
+      var header = e.target.closest('[data-toggle]');
+      if (header) {
+        var item = document.getElementById('pension-'+header.dataset.toggle);
+        if (item) item.classList.toggle('open');
+      }
+    });
+
+    // URL template override on change
+    document.getElementById('pensionList').addEventListener('change', function(e) {
+      var input = e.target;
+      if (input.dataset.src && input.dataset.label) {
+        var key = getAssetKey(input.dataset.src, input.dataset.label);
+        if (!pensionOverrides[key]) pensionOverrides[key] = {};
+        pensionOverrides[key].url = input.value;
+        savePensionOverrides();
+      }
+    });
+
+    // Run single asset class
+    async function runPensionAsset(srcId, label) {
+      var token = getToken();
+      if (!token) { showToast('Enter token first',true); return; }
+      var src = PENSION_SOURCES.find(function(s){return s.id===srcId;});
+      var ac = src && src.assetClasses.find(function(a){return a.label===label;});
+      if (!src || !ac) return;
+      var qInfo = getSelectedQuarter();
+      var url = getEffectiveUrl(srcId, ac, qInfo.q, qInfo.year);
+      var key = getAssetKey(srcId, label);
+
+      pensionState[key] = {status:'running',rawContent:'',tables:null,error:null};
+      renderPensionList();
+
+      try {
+        var resp1 = await fetch('/api/scrape?action=scrape', {
+          method:'POST', headers:{'Content-Type':'application/json','X-Admin-Token':token},
+          body: JSON.stringify({url:url,format:'markdown',include_metadata:true,stealth:true}),
+        });
+        var data1 = await resp1.json();
+        if (!resp1.ok) throw new Error(data1.error || 'Extract failed: HTTP '+resp1.status);
+        var content = (data1.data && data1.data.content) || '';
+        if (!content || content.length < 50) throw new Error('No content extracted (too short or empty)');
+
+        var resp2 = await fetch('/api/scrape?action=structure', {
+          method:'POST', headers:{'Content-Type':'application/json','X-Admin-Token':token},
+          body: JSON.stringify({content:content, hint:ac.hint||''}),
+        });
+        var data2 = await resp2.json();
+        if (!resp2.ok) throw new Error(data2.error || 'Structure failed: HTTP '+resp2.status);
+
+        pensionState[key] = {
+          status:'done', rawContent:content,
+          tables:(data2.data && data2.data.tables) || [], error:null,
+          title:(data1.data && data1.data.title) || (src.name+' - '+ac.label),
+          pageCount:data1.data && data1.data.page_count,
+          wordCount:data1.data && data1.data.word_count,
+          assetClass:ac.label, system:src.name,
+        };
+        if (!pensionOverrides[srcId]) pensionOverrides[srcId] = {};
+        pensionOverrides[srcId].lastRun = Date.now();
+        savePensionOverrides();
+        renderPensionList();
+        updateSummary();
+        viewPensionAsset(key);
+        showToast(src.name+' '+ac.label+': '+pensionState[key].tables.length+' table(s)');
+      } catch(e) {
+        pensionState[key] = {status:'error',rawContent:'',tables:null,error:e.message};
+        renderPensionList();
+        showToast(src.name+' '+ac.label+': '+e.message, true);
+      }
+    }
+
+    async function runPensionAll(srcId) {
+      var src = PENSION_SOURCES.find(function(s){return s.id===srcId;});
+      if (!src) return;
+      for (var i = 0; i < src.assetClasses.length; i++) {
+        await runPensionAsset(srcId, src.assetClasses[i].label);
+      }
+    }
+
+    $('#runAllBtn').addEventListener('click', async function(){
+      var token = getToken();
+      if (!token) { showToast('Enter token first',true); return; }
+      $('#runAllBtn').disabled = true;
+      var allAssets = [];
+      PENSION_SOURCES.forEach(function(s){ s.assetClasses.forEach(function(ac){ allAssets.push({srcId:s.id,label:ac.label}); }); });
+      var done = 0, errors = 0;
+      for (var i = 0; i < allAssets.length; i++) {
+        done++;
+        $('#runAllStatus').textContent = 'Running '+done+' of '+allAssets.length+'...';
+        await runPensionAsset(allAssets[i].srcId, allAssets[i].label);
+        var key = getAssetKey(allAssets[i].srcId, allAssets[i].label);
+        if (pensionState[key] && pensionState[key].status === 'error') errors++;
+      }
+      $('#runAllBtn').disabled = false;
+      $('#runAllStatus').textContent = 'Complete: '+(done-errors)+' succeeded, '+errors+' failed';
+    });
+
+    function viewPensionAsset(key) {
+      activePensionTab = key;
+      var card = $('#pensionResultsCard');
+      card.classList.remove('hidden');
+
+      var completedKeys = Object.keys(pensionState).filter(function(k){return pensionState[k] && pensionState[k].status==='done';});
+      var tabs = $('#pensionResultTabs');
+      tabs.textContent = '';
+      completedKeys.forEach(function(k) {
+        var s = pensionState[k];
+        var shortName = s.system ? (s.system+' - '+s.assetClass) : k.replace(/__/g,' ');
+        var btn = document.createElement('button');
+        btn.className = 'pension-result-tab' + (k===key?' active':'');
+        btn.textContent = shortName;
+        btn.addEventListener('click', function(){ viewPensionAsset(k); });
+        tabs.appendChild(btn);
+      });
+
+      renderPensionResult(key);
+    }
+
+    function renderPensionResult(key) {
+      var s = pensionState[key];
+      var body = $('#pensionResultBody');
+      body.textContent = '';
+      if (!s || !s.tables || !s.tables.length) {
+        body.insertAdjacentHTML('beforeend', '<div class="empty-state"><p>No table data extracted</p></div>');
+        return;
+      }
+      s.tables.forEach(function(t) { body.insertAdjacentHTML('beforeend', buildTableHtml(t)); });
+    }
+
+    function buildTableHtml(t) {
+      var name = t.name || 'Extracted Data';
+      var cols = t.columns || [];
+      var rows = t.rows || [];
+      var h = '<div class="table-name">'+esc(name)+'</div>';
+      h += '<div class="table-stats">'+rows.length+' rows &middot; '+cols.length+' columns</div>';
+      h += '<div class="table-container"><table class="data-table"><thead><tr>';
+      cols.forEach(function(c){ h += '<th>'+esc(c)+'</th>'; });
+      h += '</tr></thead><tbody>';
+      rows.forEach(function(r){
+        h += '<tr>';
+        r.forEach(function(v){ h += '<td>'+esc(String(v===null||v===undefined?'':v))+'</td>'; });
+        h += '</tr>';
+      });
+      h += '</tbody></table></div>';
+      return h;
+    }
+
+    // ── Summary stats ──
+    function updateSummary() {
+      var completed = Object.entries(pensionState).filter(function(kv){return kv[1].status==='done' && kv[1].tables && kv[1].tables.length;});
+      if (!completed.length) { $('#summaryCard').classList.add('hidden'); return; }
+      $('#summaryCard').classList.remove('hidden');
+
+      var totalFunds=0, totalCommitment=0, totalNAV=0, byAssetClass={}, irrValues=[];
+
+      completed.forEach(function(kv) {
+        var s = kv[1], ac = s.assetClass || 'Unknown';
+        s.tables.forEach(function(t) {
+          var cols = t.columns.map(function(c){return c.toLowerCase();});
+          totalFunds += t.rows.length;
+          if (!byAssetClass[ac]) byAssetClass[ac] = 0;
+          byAssetClass[ac] += t.rows.length;
+
+          var commitIdx = cols.findIndex(function(c){return /commit/i.test(c);});
+          var navIdx = cols.findIndex(function(c){return /fair.?market|nav|market.?val/i.test(c);});
+          var irrIdx = cols.findIndex(function(c){return /irr/i.test(c);});
+
+          t.rows.forEach(function(row) {
+            if (commitIdx>=0) { var v=parseFloat(String(row[commitIdx]).replace(/[$,]/g,'')); if(!isNaN(v)) totalCommitment+=v; }
+            if (navIdx>=0) { var v=parseFloat(String(row[navIdx]).replace(/[$,]/g,'')); if(!isNaN(v)) totalNAV+=v; }
+            if (irrIdx>=0) { var v=parseFloat(String(row[irrIdx]).replace(/[%,]/g,'')); if(!isNaN(v)) irrValues.push(v); }
+          });
+        });
+      });
+
+      var avgIrr = irrValues.length ? (irrValues.reduce(function(a,b){return a+b;},0)/irrValues.length) : null;
+      var medianIrr = null;
+      if (irrValues.length) {
+        var sorted = irrValues.slice().sort(function(a,b){return a-b;});
+        var mid = Math.floor(sorted.length/2);
+        medianIrr = sorted.length%2 ? sorted[mid] : (sorted[mid-1]+sorted[mid])/2;
+      }
+
+      var body = $('#summaryBody');
+      body.textContent = '';
+
+      var html = '<div class="summary-grid">'
+        + '<div class="summary-stat"><div class="num">'+totalFunds.toLocaleString()+'</div><div class="lbl">Total Funds</div></div>'
+        + '<div class="summary-stat"><div class="num">'+completed.length+'</div><div class="lbl">Sources Extracted</div></div>'
+        + '<div class="summary-stat"><div class="num">'+(totalCommitment>0?fmtMoney(totalCommitment):'--')+'</div><div class="lbl">Total Commitment</div></div>'
+        + '<div class="summary-stat"><div class="num">'+(totalNAV>0?fmtMoney(totalNAV):'--')+'</div><div class="lbl">Total NAV / FMV</div></div>'
+        + '<div class="summary-stat"><div class="num">'+(avgIrr!==null?avgIrr.toFixed(1)+'%':'--')+'</div><div class="lbl">Avg IRR</div></div>'
+        + '<div class="summary-stat"><div class="num">'+(medianIrr!==null?medianIrr.toFixed(1)+'%':'--')+'</div><div class="lbl">Median IRR</div></div>'
+        + '</div>';
+
+      var acKeys = Object.keys(byAssetClass).sort(function(a,b){return byAssetClass[b]-byAssetClass[a];});
+      if (acKeys.length) {
+        html += '<div class="summary-breakdown"><div style="font-size:12px;font-weight:600;margin:16px 0 8px;color:var(--text);">Funds by Asset Class</div>';
+        acKeys.forEach(function(ac){
+          html += '<div class="summary-row"><span class="k">'+esc(ac)+'</span><span class="v">'+byAssetClass[ac]+'</span></div>';
+        });
+        html += '</div>';
+      }
+      body.insertAdjacentHTML('beforeend', html);
+    }
+
+    function fmtMoney(v) {
+      if (v>=1e9) return '$'+(v/1e9).toFixed(1)+'B';
+      if (v>=1e6) return '$'+(v/1e6).toFixed(1)+'M';
+      if (v>=1e3) return '$'+(v/1e3).toFixed(1)+'K';
+      return '$'+v.toFixed(0);
+    }
+
+    // ── CSV ──
+    function tableToCsv(table) {
+      var rows = [table.columns.join(',')];
+      table.rows.forEach(function(row){
+        rows.push(row.map(function(cell){
+          var s = String(cell === null || cell === undefined ? '' : cell);
+          return (s.indexOf(',')>=0||s.indexOf('"')>=0||s.indexOf('\n')>=0) ? '"'+s.replace(/"/g,'""')+'"' : s;
+        }).join(','));
+      });
+      return rows.join('\n');
+    }
+    function downloadCsv(content, filename) {
+      var b = new Blob([content], {type:'text/csv'});
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(b); a.download = filename; a.click(); URL.revokeObjectURL(a.href);
+    }
+    function exportCsvFromTables(tables) {
+      if (!tables || !tables.length) return;
+      tables.forEach(function(t, i){
+        downloadCsv(tableToCsv(t), (t.name||'table_'+(i+1)).replace(/[^a-zA-Z0-9_-]/g,'_')+'.csv');
+      });
+    }
+
+    $('#pensionExportCsvBtn').addEventListener('click', function(){
+      if (activePensionTab && pensionState[activePensionTab] && pensionState[activePensionTab].tables)
         exportCsvFromTables(pensionState[activePensionTab].tables);
-      }
     });
-
-    // Export all pension CSVs
-    $('#pensionExportAllBtn').addEventListener('click', () => {
-      for (const src of PENSION_SOURCES) {
-        const s = pensionState[src.id];
-        if (s?.status === 'done' && s.tables) {
-          for (const t of s.tables) {
-            const name = `${src.id}_${t.name || 'data'}`.replace(/[^a-zA-Z0-9_-]/g, '_');
-            downloadCsv(tableToCsv(t), name + '.csv');
-          }
+    $('#pensionExportAllBtn').addEventListener('click', function(){
+      Object.keys(pensionState).forEach(function(key){
+        var s = pensionState[key];
+        if (s.status==='done' && s.tables) {
+          s.tables.forEach(function(t){
+            var name = (key+'_'+(t.name||'data')).replace(/[^a-zA-Z0-9_-]/g,'_');
+            downloadCsv(tableToCsv(t), name+'.csv');
+          });
         }
-      }
+      });
     });
 
-    // ════════════════ SHARED HELPERS ════════════════
-
-    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-
+    // ══════ SHARED ══════
     function showLoading(on) {
       $('#loadingBar').classList.toggle('active', on);
       $('#loadingBar').classList.remove('structure');
       $('#scrapeBtn').disabled = on;
-      $('#scrapeBtn').textContent = on ? 'Extracting…' : 'Extract';
+      $('#scrapeBtn').textContent = on ? 'Extracting...' : 'Extract';
     }
 
-    let toastTimer;
+    var toastTimer;
     function showToast(msg, isError) {
-      const existing = document.querySelector('.toast');
+      var existing = document.querySelector('.toast');
       if (existing) existing.remove();
-      const t = document.createElement('div');
+      var t = document.createElement('div');
       t.className = 'toast' + (isError ? ' error' : '');
       t.textContent = msg;
       document.body.appendChild(t);
       clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.remove(), 4000);
+      toastTimer = setTimeout(function(){ t.remove(); }, 4000);
     }
 
-    // ── Init ──
+    // Init
     initQuarters();
     renderPensionList();
   </script>
