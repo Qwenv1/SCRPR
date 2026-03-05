@@ -10,9 +10,10 @@
  * Inspired by Scrapling's fetcher architecture and Firecrawl's API surface.
  */
 import type { Context, Config } from "@netlify/functions";
-import { load as cheerioLoad, type CheerioAPI } from "cheerio";
+import { load as cheerioLoad, type CheerioAPI, type Cheerio } from "cheerio";
 import Anthropic from "@anthropic-ai/sdk";
-import pdfParse from "pdf-parse";
+import { PDFParse } from "pdf-parse";
+import { checkRateLimit } from "./rate-limit.mts";
 
 // ── Types ──
 interface ScrapeRequest {
@@ -56,6 +57,7 @@ interface PageResult {
   scraped_at: string;
   elapsed_ms: number;
 }
+
 // ── Stealth headers (Scrapling-inspired) ──
 const STEALTH_HEADERS: Record<string, string> = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
@@ -71,6 +73,7 @@ const STEALTH_HEADERS: Record<string, string> = {
   "Sec-Fetch-User": "?1",
   "Cache-Control": "max-age=0",
 };
+
 // ── Auth helper ──
 function authenticate(req: Request): Response | null {
   const url = new URL(req.url);
@@ -87,12 +90,12 @@ function authenticate(req: Request): Response | null {
   if (diff !== 0) return json({ error: "Unauthorized" }, 401);
   return null;
 }
+
 // ── URL validation ──
 function validateUrl(raw: string): URL | null {
   try {
     const u = new URL(raw);
     if (u.protocol !== "http:" && u.protocol !== "https:") return null;
-    // Block private/internal IPs (SSRF prevention)
     const host = u.hostname.toLowerCase();
     if (
       host === "localhost" ||
@@ -109,6 +112,7 @@ function validateUrl(raw: string): URL | null {
     return null;
   }
 }
+
 // ── PDF detection ──
 function isPdfUrl(url: string): boolean {
   try {
@@ -120,6 +124,7 @@ function isPdfResponse(headers: Headers): boolean {
   const ct = headers.get("content-type") || "";
   return ct.includes("application/pdf");
 }
+
 // ── Fetch page with stealth options ──
 interface FetchResult {
   html: string;
@@ -145,9 +150,11 @@ async function fetchPage(url: string, opts: { headers?: Record<string, string>; 
     // Detect PDF by content-type or URL extension
     if (isPdfResponse(resp.headers) || isPdfUrl(url)) {
       const buffer = Buffer.from(await resp.arrayBuffer());
-      const result = await pdfParse(buffer);
+      const parser = new PDFParse({ data: buffer });
+      const result = await parser.getText();
       const text = result.text;
-      const numPages = result.numpages;
+      const numPages = result.total;
+      await parser.destroy();
       return {
         html: "",
         status: resp.status,
@@ -163,12 +170,13 @@ async function fetchPage(url: string, opts: { headers?: Record<string, string>; 
     clearTimeout(timeout);
   }
 }
+
 // ── HTML → Markdown conversion ──
 function htmlToMarkdown($: CheerioAPI): string {
-  // Remove non-content elements
   $("script, style, nav, footer, header, aside, iframe, noscript, svg, [role=banner], [role=navigation], [role=complementary]").remove();
   const lines: string[] = [];
-  function processNode(el: ReturnType<CheerioAPI>) {
+
+  function processNode(el: Cheerio<any>) {
     el.contents().each((_, node: any) => {
       if (node.type === "text") {
         const text = $(node).text().trim();
@@ -238,10 +246,10 @@ function htmlToMarkdown($: CheerioAPI): string {
         }
         return;
       }
-      // Recurse for divs, spans, sections, etc.
       processNode($n);
     });
   }
+
   const $main = $("main, article, [role=main]").first();
   processNode($main.length ? $main : $("body"));
   return lines
@@ -249,6 +257,7 @@ function htmlToMarkdown($: CheerioAPI): string {
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
+
 // ── Extract metadata ──
 function extractMetadata($: CheerioAPI, url: string): Record<string, string> {
   const meta: Record<string, string> = { url };
@@ -265,6 +274,7 @@ function extractMetadata($: CheerioAPI, url: string): Record<string, string> {
   if (lang) meta.language = lang;
   return meta;
 }
+
 // ── Extract links ──
 function extractLinks($: CheerioAPI, baseUrl: string): string[] {
   const links = new Set<string>();
@@ -278,6 +288,7 @@ function extractLinks($: CheerioAPI, baseUrl: string): string[] {
   });
   return [...links];
 }
+
 // ── Clean HTML (remove scripts, styles, etc.) ──
 function cleanHtml($: CheerioAPI): string {
   const $clone = cheerioLoad($.html());
@@ -285,6 +296,7 @@ function cleanHtml($: CheerioAPI): string {
   const $main = $clone("main, article, [role=main]").first();
   return ($main.length ? $main : $clone("body")).html()?.trim() || "";
 }
+
 // ── Scrape action ──
 async function handleScrape(body: ScrapeRequest): Promise<Response> {
   const parsed = validateUrl(body.url);
@@ -295,7 +307,6 @@ async function handleScrape(body: ScrapeRequest): Promise<Response> {
     headers: body.headers,
     stealth: body.stealth ?? true,
   });
-  // PDF handling — return extracted text directly
   if (fetchResult.isPdf) {
     const content = fetchResult.pdfText || "";
     const result: PageResult = {
@@ -341,6 +352,7 @@ async function handleScrape(body: ScrapeRequest): Promise<Response> {
   }
   return json({ success: true, data: result });
 }
+
 // ── Crawl action ──
 async function handleCrawl(body: CrawlRequest): Promise<Response> {
   const parsed = validateUrl(body.url);
@@ -355,6 +367,7 @@ async function handleCrawl(body: CrawlRequest): Promise<Response> {
   const includeRe = body.include_pattern ? new RegExp(body.include_pattern) : null;
   const excludeRe = body.exclude_pattern ? new RegExp(body.exclude_pattern) : null;
   const start = Date.now();
+
   while (queue.length > 0 && results.length < maxPages) {
     const { url, depth } = queue.shift()!;
     if (visited.has(url)) continue;
@@ -386,7 +399,6 @@ async function handleCrawl(body: CrawlRequest): Promise<Response> {
         scraped_at: new Date().toISOString(),
         elapsed_ms: Date.now() - pageStart,
       });
-      // Enqueue discovered links if within depth
       if (depth < maxDepth) {
         for (const link of links) {
           if (visited.has(link)) continue;
@@ -420,6 +432,7 @@ async function handleCrawl(body: CrawlRequest): Promise<Response> {
     },
   });
 }
+
 // ── Extract action ──
 async function handleExtract(body: ExtractRequest): Promise<Response> {
   const parsed = validateUrl(body.url);
@@ -457,6 +470,7 @@ async function handleExtract(body: ExtractRequest): Promise<Response> {
     },
   });
 }
+
 // ── Structure action (Claude-powered) ──
 async function handleStructure(body: StructureRequest): Promise<Response> {
   if (!body.content || body.content.length < 10) {
@@ -466,10 +480,9 @@ async function handleStructure(body: StructureRequest): Promise<Response> {
   if (!apiKey) return json({ error: "ANTHROPIC_API_KEY not configured" }, 503);
   const start = Date.now();
   const anthropic = new Anthropic({ apiKey });
-  // Truncate to ~50k chars to keep response time under Netlify timeout
   const truncated = body.content.slice(0, 50_000);
   const hintLine = body.hint ? `\nHint about the data: ${body.hint}\n` : "";
-  // Use Haiku for speed — structure calls must finish within Netlify's timeout
+
   const resp = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 4096,
@@ -494,12 +507,11 @@ ${truncated}`,
       },
     ],
   });
+
   const textBlock = resp.content.find((b) => b.type === "text");
   const raw = textBlock?.text || "[]";
-  // Parse the JSON from Claude's response
   let tables: StructuredTable[];
   try {
-    // Strip markdown fences if present
     const cleaned = raw.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "").trim();
     const parsed = JSON.parse(cleaned);
     tables = Array.isArray(parsed) ? parsed : [parsed];
@@ -517,6 +529,7 @@ ${truncated}`,
     },
   });
 }
+
 // ── Handler ──
 export default async (req: Request, context: Context) => {
   if (req.method === "OPTIONS") {
@@ -525,6 +538,9 @@ export default async (req: Request, context: Context) => {
   if (req.method !== "POST") {
     return json({ error: "POST required" }, 405);
   }
+  // Rate limit
+  const rl = await checkRateLimit(req, "scrape", 30);
+  if (rl.limited) return json({ error: "Rate limit exceeded", retry_after: rl.retryAfterSeconds }, 429);
   // Auth
   const authErr = authenticate(req);
   if (authErr) return authErr;
@@ -544,12 +560,14 @@ export default async (req: Request, context: Context) => {
     return json({ error: e.message || "Scrape failed" }, 500);
   }
 };
+
 function json(data: any, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...corsHeaders() },
   });
 }
+
 function corsHeaders(): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": "*",
@@ -557,4 +575,5 @@ function corsHeaders(): Record<string, string> {
     "Access-Control-Allow-Headers": "Content-Type, X-Admin-Token, Authorization",
   };
 }
+
 export const config: Config = { path: "/api/scrape" };
