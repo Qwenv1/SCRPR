@@ -27,7 +27,10 @@ function checkRateLimit(
   maxRequests: number,
   windowMs: number = 60_000
 ): { limited: boolean; retryAfterSeconds: number } {
-  const ip = req.headers.get("x-nf-client-connection-ip") || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const ip =
+    req.headers.get("x-nf-client-connection-ip") ||
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "unknown";
   const key = `${endpoint}:${ip}`;
   const now = Date.now();
   const bucket = rateBuckets.get(key);
@@ -39,7 +42,10 @@ function checkRateLimit(
 
   bucket.count++;
   if (bucket.count > maxRequests) {
-    const retryAfterSeconds = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
+    const retryAfterSeconds = Math.max(
+      1,
+      Math.ceil((bucket.resetAt - now) / 1000)
+    );
     return { limited: true, retryAfterSeconds };
   }
 
@@ -68,7 +74,15 @@ interface CrawlRequest {
 
 interface ExtractRequest {
   url: string;
-  selectors: Record<string, { selector: string; type?: "css" | "xpath"; attribute?: string; multiple?: boolean }>;
+  selectors: Record<
+    string,
+    {
+      selector: string;
+      type?: "css" | "xpath";
+      attribute?: string;
+      multiple?: boolean;
+    }
+  >;
   headers?: Record<string, string>;
 }
 
@@ -98,12 +112,14 @@ interface PageResult {
 // ── Stealth headers ──
 
 const STEALTH_HEADERS: Record<string, string> = {
-  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+  Accept:
+    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
   "Accept-Language": "en-US,en;q=0.9",
   "Accept-Encoding": "gzip, deflate, br",
-  "DNT": "1",
-  "Connection": "keep-alive",
+  DNT: "1",
+  Connection: "keep-alive",
   "Upgrade-Insecure-Requests": "1",
   "Sec-Fetch-Dest": "document",
   "Sec-Fetch-Mode": "navigate",
@@ -117,11 +133,21 @@ const STEALTH_HEADERS: Record<string, string> = {
 function authenticate(req: Request): Response | null {
   const url = new URL(req.url);
   if (url.searchParams.has("token") || url.searchParams.has("api_key")) {
-    return json({ error: "Authentication via URL parameters is not permitted. Use X-Admin-Token header." }, 400);
+    return json(
+      {
+        error:
+          "Authentication via URL parameters is not permitted. Use X-Admin-Token header.",
+      },
+      400
+    );
   }
-  const adminToken = process.env.HEALTH_API_TOKEN || process.env.ADMIN_API_TOKEN;
+  const adminToken =
+    process.env.HEALTH_API_TOKEN || process.env.ADMIN_API_TOKEN;
   if (!adminToken) return json({ error: "Admin token not configured" }, 503);
-  const auth = req.headers.get("X-Admin-Token") || req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") || "";
+  const auth =
+    req.headers.get("X-Admin-Token") ||
+    req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ||
+    "";
   const authBuf = new TextEncoder().encode(auth.padEnd(adminToken.length));
   const tokenBuf = new TextEncoder().encode(adminToken.padEnd(auth.length));
   let diff = auth.length ^ adminToken.length;
@@ -146,7 +172,8 @@ function validateUrl(raw: string): URL | null {
       host.startsWith("172.") ||
       host.endsWith(".local") ||
       host === "[::1]"
-    ) return null;
+    )
+      return null;
     return u;
   } catch {
     return null;
@@ -158,7 +185,9 @@ function validateUrl(raw: string): URL | null {
 function isPdfUrl(url: string): boolean {
   try {
     return new URL(url).pathname.toLowerCase().endsWith(".pdf");
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
 
 function isPdfResponse(headers: Headers): boolean {
@@ -176,7 +205,10 @@ interface FetchResult {
   pdfBuffer?: ArrayBuffer;
 }
 
-async function fetchPage(url: string, opts: { headers?: Record<string, string>; stealth?: boolean } = {}): Promise<FetchResult> {
+async function fetchPage(
+  url: string,
+  opts: { headers?: Record<string, string>; stealth?: boolean } = {}
+): Promise<FetchResult> {
   const fetchHeaders: Record<string, string> = {
     ...(opts.stealth !== false ? STEALTH_HEADERS : {}),
     ...(opts.headers || {}),
@@ -190,7 +222,6 @@ async function fetchPage(url: string, opts: { headers?: Record<string, string>; 
       redirect: "follow",
     });
 
-    // PDF detection: check content-type header or URL extension
     if (isPdfResponse(resp.headers) || isPdfUrl(url)) {
       const buffer = await resp.arrayBuffer();
       return {
@@ -203,7 +234,12 @@ async function fetchPage(url: string, opts: { headers?: Record<string, string>; 
     }
 
     const html = await resp.text();
-    return { html, status: resp.status, responseHeaders: resp.headers, isPdf: false };
+    return {
+      html,
+      status: resp.status,
+      responseHeaders: resp.headers,
+      isPdf: false,
+    };
   } finally {
     clearTimeout(timeout);
   }
@@ -211,10 +247,14 @@ async function fetchPage(url: string, opts: { headers?: Record<string, string>; 
 
 // ── Extract text from PDF using Claude's native PDF support ──
 
-async function extractPdfText(pdfBuffer: ArrayBuffer): Promise<{ text: string; pageCount: number }> {
+async function extractPdfText(
+  pdfBuffer: ArrayBuffer
+): Promise<{ text: string; pageCount: number }> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    throw new Error("ANTHROPIC_API_KEY not configured — needed for PDF text extraction");
+    throw new Error(
+      "ANTHROPIC_API_KEY not configured — needed for PDF text extraction"
+    );
   }
 
   const anthropic = new Anthropic({ apiKey });
@@ -229,7 +269,11 @@ async function extractPdfText(pdfBuffer: ArrayBuffer): Promise<{ text: string; p
         content: [
           {
             type: "document",
-            source: { type: "base64", media_type: "application/pdf", data: base64 },
+            source: {
+              type: "base64",
+              media_type: "application/pdf",
+              data: base64,
+            },
           },
           {
             type: "text",
@@ -243,18 +287,20 @@ async function extractPdfText(pdfBuffer: ArrayBuffer): Promise<{ text: string; p
   const textBlock = resp.content.find((b) => b.type === "text");
   const text = textBlock?.text || "";
 
-  // Estimate page count from PDF header (rough)
+  // Estimate page count from PDF binary (count /Type /Page occurrences)
   const view = new Uint8Array(pdfBuffer);
   let pageCount = 0;
   const needle = [47, 84, 121, 112, 101, 32, 47, 80, 97, 103, 101]; // "/Type /Page"
   for (let i = 0; i < view.length - needle.length; i++) {
     let match = true;
     for (let j = 0; j < needle.length; j++) {
-      if (view[i + j] !== needle[j]) { match = false; break; }
+      if (view[i + j] !== needle[j]) {
+        match = false;
+        break;
+      }
     }
     if (match) pageCount++;
   }
-  // /Type /Page also matches /Type /Pages, so subtract rough estimate
   if (pageCount > 1) pageCount = Math.max(1, pageCount - 1);
   if (pageCount === 0) pageCount = 1;
 
@@ -264,7 +310,9 @@ async function extractPdfText(pdfBuffer: ArrayBuffer): Promise<{ text: string; p
 // ── HTML → Markdown conversion ──
 
 function htmlToMarkdown($: cheerio.CheerioAPI): string {
-  $("script, style, nav, footer, header, aside, iframe, noscript, svg, [role=banner], [role=navigation], [role=complementary]").remove();
+  $(
+    "script, style, nav, footer, header, aside, iframe, noscript, svg, [role=banner], [role=navigation], [role=complementary]"
+  ).remove();
   const lines: string[] = [];
 
   function processNode(el: cheerio.Cheerio<any>): void {
@@ -278,8 +326,14 @@ function htmlToMarkdown($: cheerio.CheerioAPI): string {
       const $n = $(node);
       const tag: string = node.tagName?.toLowerCase() || "";
 
-      if (tag === "br") { lines.push(""); return; }
-      if (tag === "hr") { lines.push("\n---\n"); return; }
+      if (tag === "br") {
+        lines.push("");
+        return;
+      }
+      if (tag === "hr") {
+        lines.push("\n---\n");
+        return;
+      }
 
       if (/^h[1-6]$/.test(tag)) {
         const level = parseInt(tag[1]);
@@ -331,9 +385,11 @@ function htmlToMarkdown($: cheerio.CheerioAPI): string {
         const rows: string[][] = [];
         $n.find("tr").each((_: number, tr: any) => {
           const cells: string[] = [];
-          $(tr).find("td, th").each((_: number, cell: any) => {
-            cells.push($(cell).text().trim());
-          });
+          $(tr)
+            .find("td, th")
+            .each((_: number, cell: any) => {
+              cells.push($(cell).text().trim());
+            });
           if (cells.length) rows.push(cells);
         });
         if (rows.length > 0) {
@@ -347,7 +403,6 @@ function htmlToMarkdown($: cheerio.CheerioAPI): string {
         return;
       }
 
-      // Recurse for divs, spans, sections, etc.
       processNode($n);
     });
   }
@@ -355,15 +410,15 @@ function htmlToMarkdown($: cheerio.CheerioAPI): string {
   const $main = $("main, article, [role=main]").first();
   processNode($main.length ? $main : $("body"));
 
-  return lines
-    .join("\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
 // ── Extract metadata ──
 
-function extractMetadata($: cheerio.CheerioAPI, url: string): Record<string, string> {
+function extractMetadata(
+  $: cheerio.CheerioAPI,
+  url: string
+): Record<string, string> {
   const meta: Record<string, string> = { url };
   const title = $("title").first().text().trim();
   if (title) meta.title = title;
@@ -385,11 +440,19 @@ function extractLinks($: cheerio.CheerioAPI, baseUrl: string): string[] {
   const links = new Set<string>();
   $("a[href]").each((_: number, el: any) => {
     const href = $(el).attr("href");
-    if (!href || href.startsWith("#") || href.startsWith("javascript:") || href.startsWith("mailto:")) return;
+    if (
+      !href ||
+      href.startsWith("#") ||
+      href.startsWith("javascript:") ||
+      href.startsWith("mailto:")
+    )
+      return;
     try {
       const abs = new URL(href, baseUrl).href;
       links.add(abs);
-    } catch { /* ignore malformed */ }
+    } catch {
+      /* ignore malformed */
+    }
   });
   return [...links];
 }
@@ -423,7 +486,12 @@ async function handleScrape(body: ScrapeRequest): Promise<Response> {
       const result: PageResult = {
         url: body.url,
         status: fetchResult.status,
-        title: parsed.pathname.split("/").pop()?.replace(/\.pdf$/i, "").replace(/[_-]/g, " ") || "PDF Document",
+        title:
+          parsed.pathname
+            .split("/")
+            .pop()
+            ?.replace(/\.pdf$/i, "")
+            .replace(/[_-]/g, " ") || "PDF Document",
         content: text,
         word_count: text.split(/\s+/).filter(Boolean).length,
         scraped_at: new Date().toISOString(),
@@ -432,7 +500,10 @@ async function handleScrape(body: ScrapeRequest): Promise<Response> {
       if (body.include_metadata) {
         result.metadata = { url: body.url, content_type: "application/pdf" };
       }
-      return json({ success: true, data: { ...result, format: "pdf", page_count: pageCount } });
+      return json({
+        success: true,
+        data: { ...result, format: "pdf", page_count: pageCount },
+      });
     } catch (e: any) {
       return json({ error: `PDF extraction failed: ${e.message}` }, 422);
     }
@@ -444,15 +515,22 @@ async function handleScrape(body: ScrapeRequest): Promise<Response> {
 
   let content: string;
   switch (format) {
-    case "markdown": content = htmlToMarkdown($); break;
-    case "html": content = cleanHtml($); break;
+    case "markdown":
+      content = htmlToMarkdown($);
+      break;
+    case "html":
+      content = cleanHtml($);
+      break;
     case "text": {
       $("script, style, noscript").remove();
       content = $("body").text().replace(/\s+/g, " ").trim();
       break;
     }
-    case "raw": content = html; break;
-    default: content = htmlToMarkdown($);
+    case "raw":
+      content = html;
+      break;
+    default:
+      content = htmlToMarkdown($);
   }
 
   const result: PageResult = {
@@ -483,9 +561,15 @@ async function handleCrawl(body: CrawlRequest): Promise<Response> {
   const baseOrigin = parsed.origin;
   const visited = new Set<string>();
   const results: PageResult[] = [];
-  const queue: { url: string; depth: number }[] = [{ url: body.url, depth: 0 }];
-  const includeRe = body.include_pattern ? new RegExp(body.include_pattern) : null;
-  const excludeRe = body.exclude_pattern ? new RegExp(body.exclude_pattern) : null;
+  const queue: { url: string; depth: number }[] = [
+    { url: body.url, depth: 0 },
+  ];
+  const includeRe = body.include_pattern
+    ? new RegExp(body.include_pattern)
+    : null;
+  const excludeRe = body.exclude_pattern
+    ? new RegExp(body.exclude_pattern)
+    : null;
   const start = Date.now();
 
   while (queue.length > 0 && results.length < maxPages) {
@@ -515,14 +599,19 @@ async function handleCrawl(body: CrawlRequest): Promise<Response> {
       const title = $("title").first().text().trim();
       let content: string;
       switch (format) {
-        case "markdown": content = htmlToMarkdown($); break;
-        case "html": content = cleanHtml($); break;
+        case "markdown":
+          content = htmlToMarkdown($);
+          break;
+        case "html":
+          content = cleanHtml($);
+          break;
         case "text": {
           $("script, style, noscript").remove();
           content = $("body").text().replace(/\s+/g, " ").trim();
           break;
         }
-        default: content = htmlToMarkdown($);
+        default:
+          content = htmlToMarkdown($);
       }
       const links = extractLinks($, url);
       results.push({
@@ -545,7 +634,9 @@ async function handleCrawl(body: CrawlRequest): Promise<Response> {
             if (includeRe && !includeRe.test(link)) continue;
             if (excludeRe && excludeRe.test(link)) continue;
             queue.push({ url: link, depth: depth + 1 });
-          } catch { /* skip */ }
+          } catch {
+            /* skip */
+          }
         }
       }
     } catch (e: any) {
@@ -580,7 +671,10 @@ async function handleExtract(body: ExtractRequest): Promise<Response> {
     return json({ error: "At least one selector is required" }, 400);
   }
   const start = Date.now();
-  const { html, status } = await fetchPage(body.url, { headers: body.headers, stealth: true });
+  const { html, status } = await fetchPage(body.url, {
+    headers: body.headers,
+    stealth: true,
+  });
   const $ = cheerio.load(html);
   const extracted: Record<string, string | string[]> = {};
 
@@ -596,7 +690,9 @@ async function handleExtract(body: ExtractRequest): Promise<Response> {
       extracted[key] = values;
     } else {
       const el = els.first();
-      extracted[key] = attribute ? (el.attr(attribute) || "") : el.text().trim();
+      extracted[key] = attribute
+        ? el.attr(attribute) || ""
+        : el.text().trim();
     }
   }
 
@@ -619,7 +715,8 @@ async function handleStructure(body: StructureRequest): Promise<Response> {
     return json({ error: "Content is required (min 10 chars)" }, 400);
   }
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return json({ error: "ANTHROPIC_API_KEY not configured" }, 503);
+  if (!apiKey)
+    return json({ error: "ANTHROPIC_API_KEY not configured" }, 503);
 
   const start = Date.now();
   const anthropic = new Anthropic({ apiKey });
@@ -658,14 +755,20 @@ ${truncated}`,
 
   let tables: StructuredTable[];
   try {
-    const cleaned = raw.replace(/^```(?:json)?\s*\n?/i, "").replace(/\n?```\s*$/i, "").trim();
+    const cleaned = raw
+      .replace(/^```(?:json)?\s*\n?/i, "")
+      .replace(/\n?```\s*$/i, "")
+      .trim();
     const parsed = JSON.parse(cleaned);
     tables = Array.isArray(parsed) ? parsed : [parsed];
   } catch {
-    return json({
-      error: "Failed to parse structured data from AI response",
-      raw_response: raw.slice(0, 500),
-    }, 422);
+    return json(
+      {
+        error: "Failed to parse structured data from AI response",
+        raw_response: raw.slice(0, 500),
+      },
+      422
+    );
   }
 
   return json({
@@ -689,7 +792,11 @@ export default async (req: Request, context: Context) => {
 
   // Rate limit
   const rl = checkRateLimit(req, "scrape", 30);
-  if (rl.limited) return json({ error: "Rate limit exceeded", retry_after: rl.retryAfterSeconds }, 429);
+  if (rl.limited)
+    return json(
+      { error: "Rate limit exceeded", retry_after: rl.retryAfterSeconds },
+      429
+    );
 
   // Auth
   const authErr = authenticate(req);
@@ -701,11 +808,19 @@ export default async (req: Request, context: Context) => {
   try {
     const body = await req.json();
     switch (action) {
-      case "scrape": return await handleScrape(body as ScrapeRequest);
-      case "crawl": return await handleCrawl(body as CrawlRequest);
-      case "extract": return await handleExtract(body as ExtractRequest);
-      case "structure": return await handleStructure(body as StructureRequest);
-      default: return json({ error: "Unknown action. Use: scrape, crawl, extract, structure" }, 400);
+      case "scrape":
+        return await handleScrape(body as ScrapeRequest);
+      case "crawl":
+        return await handleCrawl(body as CrawlRequest);
+      case "extract":
+        return await handleExtract(body as ExtractRequest);
+      case "structure":
+        return await handleStructure(body as StructureRequest);
+      default:
+        return json(
+          { error: "Unknown action. Use: scrape, crawl, extract, structure" },
+          400
+        );
     }
   } catch (e: any) {
     console.error("Scrape API error:", e);
@@ -716,7 +831,11 @@ export default async (req: Request, context: Context) => {
 function json(data: any, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...corsHeaders() },
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+      ...corsHeaders(),
+    },
   });
 }
 
