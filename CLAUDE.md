@@ -8,6 +8,10 @@ Scraping dashboard hosted on Netlify with a Python backend for PDF parsing.
 - **Dashboard SPA** (`public/index.html`): Single-file dark-themed frontend with Extract URL and Pensions tabs. No build step.
 - **Python Backend** (`scrpr-backend/`): FastAPI + Scrapling + PyMuPDF for stealth fetching and PDF table extraction. Deployed separately (Docker/Procfile).
 
+### Backend Fallback
+
+When a direct fetch returns 403 (blocked by anti-bot), the Netlify function automatically retries via the Python backend if `SCRPR_BACKEND_URL` is configured. The Python backend uses Scrapling's `StealthyFetcher` (headless browser with anti-detection) and PyMuPDF for native PDF table extraction — no AI needed for PDF parsing.
+
 ## Commands
 
 ```bash
@@ -30,7 +34,7 @@ cd scrpr-backend && pip install -r requirements.txt && uvicorn main:app --reload
 | `scrpr-backend/main.py` | Python FastAPI backend with Scrapling + PyMuPDF |
 | `netlify.toml` | Netlify build/deploy config, function timeout, security headers |
 | `tsconfig.json` | TypeScript config targeting ES2022/NodeNext |
-| `.env.example` | Required env vars: `HEALTH_API_TOKEN`, `ANTHROPIC_API_KEY` |
+| `.env.example` | Required env vars: `HEALTH_API_TOKEN`, `ANTHROPIC_API_KEY`, optional `SCRPR_BACKEND_URL` |
 
 ## Auth
 
