@@ -226,7 +226,17 @@ async function fetchDirect(
       redirect: "follow",
     });
 
-    if (isPdfResponse(resp.headers) || isPdfUrl(url)) {
+    // Only treat as PDF if we got a successful response AND it's actually a PDF
+    // (not an HTML error page from a .pdf URL that returned 404/403)
+    const looksLikePdf = isPdfResponse(resp.headers);
+    const urlEndsPdf = isPdfUrl(url);
+    if ((looksLikePdf || urlEndsPdf) && resp.ok) {
+      // If URL ends in .pdf but content-type says HTML, it's an error page
+      const ct = resp.headers.get("content-type") || "";
+      if (urlEndsPdf && !looksLikePdf && ct.includes("text/html")) {
+        const html = await resp.text();
+        return { html, status: resp.status, responseHeaders: resp.headers, isPdf: false, via: "direct" };
+      }
       const buffer = await resp.arrayBuffer();
       return {
         html: "",
@@ -578,6 +588,11 @@ async function handleScrape(body: ScrapeRequest): Promise<Response> {
 
   // PDF handling — use Claude to extract text
   if (fetchResult.isPdf && fetchResult.pdfBuffer) {
+    if (!fetchResult.status || fetchResult.status >= 400) {
+      return json({
+        error: `PDF URL returned HTTP ${fetchResult.status} — the file may not exist for this quarter/year`,
+      }, fetchResult.status === 404 ? 404 : 422);
+    }
     try {
       const { text, pageCount } = await extractPdfText(fetchResult.pdfBuffer);
       const result: PageResult = {
