@@ -365,7 +365,7 @@ async function extractPdfText(
   const base64 = Buffer.from(pdfBuffer).toString("base64");
 
   const resp = await anthropic.messages.create({
-    model: "claude-haiku-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 16384,
     messages: [
       {
@@ -868,7 +868,7 @@ async function handleStructure(body: StructureRequest): Promise<Response> {
   let raw: string;
   try {
     const resp = await anthropic.messages.create({
-      model: "claude-haiku-4-5",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 16384,
       messages: [
         {
