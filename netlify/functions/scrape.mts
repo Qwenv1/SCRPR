@@ -205,9 +205,11 @@ interface FetchResult {
   responseHeaders: Headers;
   isPdf: boolean;
   pdfBuffer?: ArrayBuffer;
+  via?: "direct" | "backend";
+  backendPdfResult?: any;
 }
 
-async function fetchPage(
+async function fetchDirect(
   url: string,
   opts: { headers?: Record<string, string>; stealth?: boolean } = {}
 ): Promise<FetchResult> {
@@ -232,6 +234,7 @@ async function fetchPage(
         responseHeaders: resp.headers,
         isPdf: true,
         pdfBuffer: buffer,
+        via: "direct",
       };
     }
 
@@ -241,10 +244,81 @@ async function fetchPage(
       status: resp.status,
       responseHeaders: resp.headers,
       isPdf: false,
+      via: "direct",
     };
   } finally {
     clearTimeout(timeout);
   }
+}
+
+// ── Proxy through Python backend (Scrapling + PyMuPDF) ──
+
+async function fetchViaBackend(
+  url: string,
+  opts: { headers?: Record<string, string> } = {}
+): Promise<FetchResult> {
+  const backendUrl = process.env.SCRPR_BACKEND_URL;
+  if (!backendUrl) throw new Error("SCRPR_BACKEND_URL not configured");
+  const adminToken =
+    process.env.ADMIN_API_TOKEN || process.env.HEALTH_API_TOKEN || "";
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 60000);
+  try {
+    const resp = await fetch(`${backendUrl}/api/scrape?action=scrape`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Admin-Token": adminToken,
+      },
+      body: JSON.stringify({
+        url,
+        format: "markdown",
+        stealth: true,
+        headers: opts.headers,
+      }),
+      signal: controller.signal,
+    });
+
+    const data = (await resp.json()) as any;
+    if (!data.success) {
+      throw new Error(data.error || "Backend scrape failed");
+    }
+
+    const d = data.data;
+    const isPdf = d.format === "pdf";
+    return {
+      html: isPdf ? "" : d.content,
+      status: d.status || 200,
+      responseHeaders: new Headers({
+        "content-type": isPdf ? "application/pdf" : "text/html",
+      }),
+      isPdf,
+      via: "backend",
+      backendPdfResult: isPdf ? d : undefined,
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function fetchPage(
+  url: string,
+  opts: { headers?: Record<string, string>; stealth?: boolean } = {}
+): Promise<FetchResult> {
+  const result = await fetchDirect(url, opts);
+
+  // If direct fetch got blocked (403) and Python backend is configured, retry via backend
+  if (result.status === 403 && process.env.SCRPR_BACKEND_URL) {
+    try {
+      return await fetchViaBackend(url, { headers: opts.headers });
+    } catch {
+      // Backend fallback failed — return original 403 result
+      return result;
+    }
+  }
+
+  return result;
 }
 
 // ── Extract text from PDF using Claude's native PDF support ──
@@ -481,6 +555,27 @@ async function handleScrape(body: ScrapeRequest): Promise<Response> {
     stealth: body.stealth ?? true,
   });
 
+  // PDF already extracted by Python backend (Scrapling + PyMuPDF)
+  if (fetchResult.backendPdfResult) {
+    const d = fetchResult.backendPdfResult;
+    const result: PageResult = {
+      url: body.url,
+      status: d.status || 200,
+      title: d.title || "PDF Document",
+      content: d.content,
+      word_count: d.word_count || d.content.split(/\s+/).filter(Boolean).length,
+      scraped_at: new Date().toISOString(),
+      elapsed_ms: Date.now() - start,
+    };
+    if (body.include_metadata) {
+      result.metadata = { url: body.url, content_type: "application/pdf" };
+    }
+    return json({
+      success: true,
+      data: { ...result, format: "pdf", page_count: d.page_count, via: "backend" },
+    });
+  }
+
   // PDF handling — use Claude to extract text
   if (fetchResult.isPdf && fetchResult.pdfBuffer) {
     try {
@@ -512,6 +607,21 @@ async function handleScrape(body: ScrapeRequest): Promise<Response> {
   }
 
   const { html, status } = fetchResult;
+
+  // Backend already returned markdown — use it directly
+  if (fetchResult.via === "backend" && html) {
+    const result: PageResult = {
+      url: body.url,
+      status,
+      title: "",
+      content: html,
+      word_count: html.split(/\s+/).filter(Boolean).length,
+      scraped_at: new Date().toISOString(),
+      elapsed_ms: Date.now() - start,
+    };
+    return json({ success: true, data: { ...result, via: "backend" } });
+  }
+
   const $ = cheerio.load(html);
   const title = $("title").first().text().trim();
 
