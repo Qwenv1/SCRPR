@@ -264,7 +264,7 @@ async function extractPdfText(
 
   const resp = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
-    max_tokens: 8192,
+    max_tokens: 16384,
     messages: [
       {
         role: "user",
@@ -729,7 +729,7 @@ async function handleStructure(body: StructureRequest): Promise<Response> {
 
   const resp = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
-    max_tokens: 4096,
+    max_tokens: 16384,
     messages: [
       {
         role: "user",
