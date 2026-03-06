@@ -226,8 +226,25 @@ async function fetchDirect(
       redirect: "follow",
     });
 
-    if (isPdfResponse(resp.headers) || isPdfUrl(url)) {
+    const looksLikePdf = isPdfResponse(resp.headers);
+    const urlEndsPdf = isPdfUrl(url);
+    if ((looksLikePdf || urlEndsPdf) && resp.ok) {
+      const ct = resp.headers.get("content-type") || "";
+      // If content-type says HTML, it's an error page — not a real PDF
+      if (ct.includes("text/html")) {
+        const html = await resp.text();
+        return { html, status: resp.status, responseHeaders: resp.headers, isPdf: false, via: "direct" };
+      }
       const buffer = await resp.arrayBuffer();
+      // Validate PDF magic bytes (%PDF-)
+      const header = new Uint8Array(buffer.slice(0, 5));
+      const isPdf = header[0] === 0x25 && header[1] === 0x50 && header[2] === 0x44
+                  && header[3] === 0x46 && header[4] === 0x2D;
+      if (!isPdf) {
+        // Not a real PDF despite URL/content-type — treat as HTML
+        const decoder = new TextDecoder();
+        return { html: decoder.decode(buffer), status: resp.status, responseHeaders: resp.headers, isPdf: false, via: "direct" };
+      }
       return {
         html: "",
         status: resp.status,
@@ -236,6 +253,11 @@ async function fetchDirect(
         pdfBuffer: buffer,
         via: "direct",
       };
+    }
+    // Non-OK response from a PDF URL — return as HTML so caller sees the error status
+    if ((looksLikePdf || urlEndsPdf) && !resp.ok) {
+      const html = await resp.text();
+      return { html, status: resp.status, responseHeaders: resp.headers, isPdf: false, via: "direct" };
     }
 
     const html = await resp.text();
@@ -333,11 +355,17 @@ async function extractPdfText(
     );
   }
 
+  // Anthropic API limit: ~32MB for documents; base64 adds ~33% overhead
+  const MAX_PDF_BYTES = 24 * 1024 * 1024; // 24MB pre-encoding
+  if (pdfBuffer.byteLength > MAX_PDF_BYTES) {
+    throw new Error(`PDF too large (${Math.round(pdfBuffer.byteLength / 1024 / 1024)}MB) — max ${MAX_PDF_BYTES / 1024 / 1024}MB`);
+  }
+
   const anthropic = new Anthropic({ apiKey });
   const base64 = Buffer.from(pdfBuffer).toString("base64");
 
   const resp = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
+    model: "claude-haiku-4-5",
     max_tokens: 16384,
     messages: [
       {
@@ -837,13 +865,15 @@ async function handleStructure(body: StructureRequest): Promise<Response> {
   const truncated = body.content.slice(0, 50_000);
   const hintLine = body.hint ? `\nHint about the data: ${body.hint}\n` : "";
 
-  const resp = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 16384,
-    messages: [
-      {
-        role: "user",
-        content: `You are a data extraction expert. Parse the following raw text content into structured tables.
+  let raw: string;
+  try {
+    const resp = await anthropic.messages.create({
+      model: "claude-haiku-4-5",
+      max_tokens: 16384,
+      messages: [
+        {
+          role: "user",
+          content: `You are a data extraction expert. Parse the following raw text content into structured tables.
 ${hintLine}
 Return ONLY a JSON array of table objects. Each table object must have:
 - "name": string (descriptive table name)
@@ -860,12 +890,15 @@ Rules:
 
 Raw text content:
 ${truncated}`,
-      },
-    ],
-  });
+        },
+      ],
+    });
 
-  const textBlock = resp.content.find((b) => b.type === "text");
-  const raw = textBlock?.text || "[]";
+    const textBlock = resp.content.find((b) => b.type === "text");
+    raw = textBlock?.text || "[]";
+  } catch (e: any) {
+    return json({ error: `AI structuring failed: ${e.message}` }, 502);
+  }
 
   let tables: StructuredTable[];
   try {
