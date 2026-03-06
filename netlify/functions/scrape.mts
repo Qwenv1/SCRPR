@@ -167,11 +167,13 @@ function validateUrl(raw: string): URL | null {
       host === "localhost" ||
       host === "127.0.0.1" ||
       host === "0.0.0.0" ||
+      host === "[::1]" ||
+      host === "[::]" ||
       host.startsWith("192.168.") ||
       host.startsWith("10.") ||
-      host.startsWith("172.") ||
-      host.endsWith(".local") ||
-      host === "[::1]"
+      host.startsWith("169.254.") ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(host) ||
+      host.endsWith(".local")
     )
       return null;
     return u;
@@ -262,7 +264,7 @@ async function extractPdfText(
 
   const resp = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
-    max_tokens: 8192,
+    max_tokens: 16384,
     messages: [
       {
         role: "user",
@@ -564,12 +566,14 @@ async function handleCrawl(body: CrawlRequest): Promise<Response> {
   const queue: { url: string; depth: number }[] = [
     { url: body.url, depth: 0 },
   ];
-  const includeRe = body.include_pattern
-    ? new RegExp(body.include_pattern)
-    : null;
-  const excludeRe = body.exclude_pattern
-    ? new RegExp(body.exclude_pattern)
-    : null;
+  let includeRe: RegExp | null = null;
+  let excludeRe: RegExp | null = null;
+  try {
+    if (body.include_pattern) includeRe = new RegExp(body.include_pattern);
+    if (body.exclude_pattern) excludeRe = new RegExp(body.exclude_pattern);
+  } catch {
+    return json({ error: "Invalid include_pattern or exclude_pattern regex" }, 400);
+  }
   const start = Date.now();
 
   while (queue.length > 0 && results.length < maxPages) {
@@ -725,7 +729,7 @@ async function handleStructure(body: StructureRequest): Promise<Response> {
 
   const resp = await anthropic.messages.create({
     model: "claude-haiku-4-5-20251001",
-    max_tokens: 4096,
+    max_tokens: 16384,
     messages: [
       {
         role: "user",
