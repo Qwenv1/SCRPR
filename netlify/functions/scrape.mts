@@ -933,6 +933,14 @@ export default async (req: Request, context: Context) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: corsHeaders() });
   }
+  if (req.method === "GET") {
+    return json({
+      status: "ok",
+      service: "scrpr",
+      actions: ["scrape", "crawl", "extract", "structure"],
+      usage: "POST with X-Admin-Token header and JSON body",
+    });
+  }
   if (req.method !== "POST") {
     return json({ error: "POST required" }, 405);
   }
