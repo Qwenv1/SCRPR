@@ -11,16 +11,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY scrpr-backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Scrapling's browser dependencies (Camoufox + Playwright)
 RUN python -c "from scrapling import Fetcher; print('Scrapling ready')" || true
 RUN scrapling install || python -m playwright install chromium --with-deps || true
 
-COPY . .
+COPY scrpr-backend/ .
 
 EXPOSE 8000
 
 CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
-

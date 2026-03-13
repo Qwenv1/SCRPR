@@ -638,6 +638,20 @@ async def scrape_endpoint(request: Request, action: str = "scrape"):
         raise HTTPException(400, detail="Unknown action. Use: scrape, crawl, extract")
 
 
+@app.get("/")
+async def root():
+    return {
+        "status": "ok",
+        "service": "scrpr-backend",
+        "endpoints": {
+            "POST /api/scrape?action=scrape": "Scrape a URL",
+            "POST /api/scrape?action=crawl": "Crawl links from a URL",
+            "POST /api/scrape?action=extract": "Extract data with CSS selectors",
+            "GET /health": "Health check",
+        },
+    }
+
+
 @app.get("/health")
 async def health():
     return {"status": "ok", "engine": "scrapling+pymupdf"}
