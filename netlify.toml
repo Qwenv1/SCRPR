@@ -3,6 +3,9 @@
   functions = "netlify/functions"
   command = "# no build step"
 
+[build.environment]
+  NODE_VERSION = "22"
+
 [functions]
   node_bundler = "esbuild"
 
