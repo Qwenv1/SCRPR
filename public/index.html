@@ -468,7 +468,12 @@
           method:'POST', headers:{'Content-Type':'application/json','X-Admin-Token':token},
           body: JSON.stringify({url:url,format:'markdown',include_metadata:true,stealth:true}),
         });
-        var data = await resp.json();
+        var data;
+        var ct = resp.headers.get('content-type') || '';
+        if (ct.indexOf('application/json') < 0) {
+          throw new Error('API returned non-JSON (HTTP ' + resp.status + '). The function may not be deployed — check /api/scrape in your browser.');
+        }
+        data = await resp.json();
         if (!resp.ok) {
           var errMsg = data.error || 'HTTP '+resp.status;
           if (errMsg.indexOf('Invalid or blocked URL') >= 0) {
@@ -560,6 +565,8 @@
           method:'POST', headers:{'Content-Type':'application/json','X-Admin-Token':token},
           body: JSON.stringify({content:rawContent}),
         });
+        var ctS = resp.headers.get('content-type') || '';
+        if (ctS.indexOf('application/json') < 0) throw new Error('API unreachable (HTTP ' + resp.status + ')');
         var data = await resp.json();
         if (!resp.ok) throw new Error(data.error || 'HTTP '+resp.status);
         if (data.success) {
@@ -723,6 +730,8 @@
           method:'POST', headers:{'Content-Type':'application/json','X-Admin-Token':token},
           body: JSON.stringify({url:url,format:'markdown',include_metadata:true,stealth:true}),
         });
+        var ct1 = resp1.headers.get('content-type') || '';
+        if (ct1.indexOf('application/json') < 0) throw new Error('API unreachable (HTTP ' + resp1.status + '). Check that the function is deployed.');
         var data1 = await resp1.json();
         if (!resp1.ok) throw new Error(data1.error || 'Extract failed: HTTP '+resp1.status);
         var content = (data1.data && data1.data.content) || '';
@@ -731,6 +740,8 @@
           method:'POST', headers:{'Content-Type':'application/json','X-Admin-Token':token},
           body: JSON.stringify({content:content, hint:ac.hint||''}),
         });
+        var ct2 = resp2.headers.get('content-type') || '';
+        if (ct2.indexOf('application/json') < 0) throw new Error('API unreachable (HTTP ' + resp2.status + '). Check that the function is deployed.');
         var data2 = await resp2.json();
         if (!resp2.ok) throw new Error(data2.error || 'Structure failed: HTTP '+resp2.status);
         pensionState[key] = {

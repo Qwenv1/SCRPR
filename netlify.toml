@@ -1,12 +1,19 @@
 [build]
   publish = "public"
   functions = "netlify/functions"
+  command = "# no build step"
 
 [functions]
   node_bundler = "esbuild"
 
 [functions."scrape"]
   timeout = 60
+
+# Fallback redirect in case Functions v2 config.path routing is not picked up
+[[redirects]]
+  from = "/api/scrape"
+  to = "/.netlify/functions/scrape"
+  status = 200
 
 [[headers]]
   for = "/*"
